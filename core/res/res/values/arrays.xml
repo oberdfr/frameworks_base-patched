@@ -233,4 +233,9 @@
     <string-array name="demo_device_provisioning_known_signers">
         <item>@string/config_retailDemoPackageSignature</item>
     </string-array>
+
+    <!-- These are system packages exempted from privacy indicator -->
+    <string-array name="config_indicatorExemptedPackageNames" translatable="false">
+        <item>co.aospa.sense</item>
+  </string-array>
 </resources>
