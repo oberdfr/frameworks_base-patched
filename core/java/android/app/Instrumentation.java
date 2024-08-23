@@ -63,7 +63,7 @@ import android.view.WindowManagerGlobal;
 
 import com.android.internal.content.ReferrerIntent;
 
-import com.android.internal.hentaiutils.HentaiSpoofer;
+import com.android.internal.hentaiutils.hentaiSpoofer;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -1353,7 +1353,7 @@ public class Instrumentation {
         Application app = getFactory(context.getPackageName())
                 .instantiateApplication(cl, className);
         app.attach(context);
-        HentaiSpoofer.initApplicationBeforeOnCreate(context);
+        hentaiSpoofer.initApplicationBeforeOnCreate(context);
         return app;
     }
     
@@ -1371,7 +1371,7 @@ public class Instrumentation {
             ClassNotFoundException {
         Application app = (Application)clazz.newInstance();
         app.attach(context);
-        HentaiSpoofer.initApplicationBeforeOnCreate(context);
+        hentaiSpoofer.initApplicationBeforeOnCreate(context);
         return app;
     }
 
