@@ -25,6 +25,7 @@ import static android.view.InsetsFrameProvider.SOURCE_DISPLAY;
 import static android.view.InsetsFrameProvider.SOURCE_FRAME;
 import static android.view.ViewRootImpl.CLIENT_IMMERSIVE_CONFIRMATION;
 import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
+import static android.view.WindowInsetsController.APPEARANCE_FORCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LOW_PROFILE_BARS;
@@ -40,7 +41,6 @@ import static android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACK
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_CONSUME_IME_INSETS;
-import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INTERCEPT_GLOBAL_DRAG_AND_DROP;
@@ -116,6 +116,7 @@ import android.view.InsetsState;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewDebug;
+import android.view.WindowInsets;
 import android.view.WindowInsets.Type;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowLayout;
@@ -127,6 +128,7 @@ import android.window.ClientWindowFrames;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.policy.ForceShowNavBarSettingsObserver;
 import com.android.internal.policy.GestureNavigationSettingsObserver;
 import com.android.internal.policy.ScreenDecorationsUtils;
@@ -144,6 +146,7 @@ import com.android.server.policy.WindowManagerPolicy.ScreenOnListener;
 import com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.wm.shell.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -671,6 +674,7 @@ public class DisplayPolicy {
                 mService.mHighRefreshRateDenylist);
 
         mGestureNavigationSettingsObserver = new GestureNavigationSettingsObserver(mHandler,
+                BackgroundThread.getHandler(),
                 mContext, () -> {
             synchronized (mLock) {
                 onConfigurationChanged();
@@ -973,21 +977,22 @@ public class DisplayPolicy {
                 break;
 
             case TYPE_BASE_APPLICATION:
-
-                // A non-translucent main app window isn't allowed to fit insets or display cutouts,
-                // as it would create a hole on the display!
                 if (attrs.isFullscreen() && win.mActivityRecord != null
                         && win.mActivityRecord.fillsParent()
-                        && (attrs.privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0
-                        && (attrs.getFitInsetsTypes() != 0
-                                || (attrs.privateFlags & PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED) != 0
-                                        && attrs.layoutInDisplayCutoutMode
-                                                != LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS)) {
-                    throw new IllegalArgumentException("Illegal attributes: Main activity window"
-                            + " that isn't translucent trying to fit insets or display cutouts."
-                            + " attrs=" + attrs);
+                        && (attrs.privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0) {
+                    if (attrs.getFitInsetsTypes() != 0) {
+                        // A non-translucent main app window isn't allowed to fit insets,
+                        // as it would create a hole on the display!
+                        throw new IllegalArgumentException("Illegal attributes: Main window of "
+                                + win.mActivityRecord.getName() + " that isn't translucent trying"
+                                + " to fit insets. fitInsetsTypes=" + WindowInsets.Type.toString(
+                                        attrs.getFitInsetsTypes()));
+                    }
                 }
                 break;
+        }
+        if ((attrs.insetsFlags.appearance & APPEARANCE_FORCE_LIGHT_NAVIGATION_BARS) != 0) {
+            attrs.insetsFlags.appearance |= APPEARANCE_LIGHT_NAVIGATION_BARS;
         }
 
         if (LayoutParams.isSystemAlertWindowType(attrs.type)) {
@@ -1803,7 +1808,8 @@ public class DisplayPolicy {
         updateConfigurationAndScreenSizeDependentBehaviors();
 
         final boolean shouldAttach =
-                res.getBoolean(R.bool.config_attachNavBarToAppDuringTransition);
+                res.getBoolean(R.bool.config_attachNavBarToAppDuringTransition)
+                        && !Flags.enableTinyTaskbar();
         if (mShouldAttachNavBarToAppDuringTransition != shouldAttach) {
             mShouldAttachNavBarToAppDuringTransition = shouldAttach;
         }
@@ -2007,9 +2013,14 @@ public class DisplayPolicy {
             public String toString() {
                 final StringBuilder tmpSb = new StringBuilder(32);
                 return "{nonDecorInsets=" + mNonDecorInsets.toShortString(tmpSb)
+                        + ", overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
                         + ", configInsets=" + mConfigInsets.toShortString(tmpSb)
+                        + ", overrideConfigInsets=" + mOverrideConfigInsets.toShortString(tmpSb)
                         + ", nonDecorFrame=" + mNonDecorFrame.toShortString(tmpSb)
-                        + ", configFrame=" + mConfigFrame.toShortString(tmpSb) + '}';
+                        + ", overrideNonDecorFrame=" + mOverrideNonDecorFrame.toShortString(tmpSb)
+                        + ", configFrame=" + mConfigFrame.toShortString(tmpSb)
+                        + ", overrideConfigFrame=" + mOverrideConfigFrame.toShortString(tmpSb)
+                        + '}';
             }
         }
 

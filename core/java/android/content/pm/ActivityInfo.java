@@ -333,10 +333,9 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     }
 
     /**
-     * Specifies permissions necessary to launch this activity via
-     * {@link android.content.Context#startActivity} when passing content URIs. The default value is
-     * {@code none}, meaning no specific permissions are required. Setting this attribute restricts
-     * activity invocation based on the invoker's permissions.
+     * Specifies permissions necessary to launch this activity when passing content URIs. The
+     * default value is {@code none}, meaning no specific permissions are required. Setting this
+     * attribute restricts activity invocation based on the invoker's permissions.
      * @hide
      */
     @RequiredContentUriPermission
@@ -1279,6 +1278,26 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     @TestApi
     public static final long OVERRIDE_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE =
             264301586L; // buganizer id
+
+    /**
+     * Excludes the packages the override is applied to from the camera compatibility treatment
+     * in free-form windowing mode for fixed-orientation apps.
+     *
+     * <p>In free-form windowing mode, the compatibility treatment emulates running on a portrait
+     * device by letterboxing the app window and changing the camera characteristics to what apps
+     * commonly expect in a portrait device: 90 and 270 degree sensor rotation for back and front
+     * cameras, respectively, and setting display rotation to 0.
+     *
+     * <p>Use this flag to disable the compatibility treatment for apps that do not respond well to
+     * the treatment.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    @Disabled
+    public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_FREEFORM_WINDOWING_TREATMENT =
+            314961188L;
 
     /**
      * This change id forces the packages it is applied to sandbox {@link android.view.View} API to

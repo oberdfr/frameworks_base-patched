@@ -175,7 +175,8 @@ public final class PhoneWindowTest {
 
         WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
         wmlp.token = new Binder(); // Set a fake token to bypass 'is your activity running' check
-
+        wmlp.setFrameRatePowerSavingsBalanced(
+                    mPhoneWindow.getAttributes().isFrameRatePowerSavingsBalanced());
         sInstrumentation.runOnMainSync(() -> {
             WindowManager wm = mContext.getSystemService(WindowManager.class);
             wm.addView(decorView, wmlp);
@@ -196,7 +197,8 @@ public final class PhoneWindowTest {
 
         WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
         wmlp.token = new Binder(); // Set a fake token to bypass 'is your activity running' check
-
+        wmlp.setFrameRatePowerSavingsBalanced(
+                mPhoneWindow.getAttributes().isFrameRatePowerSavingsBalanced());
         sInstrumentation.runOnMainSync(() -> {
             WindowManager wm = mContext.getSystemService(WindowManager.class);
             wm.addView(decorView, wmlp);

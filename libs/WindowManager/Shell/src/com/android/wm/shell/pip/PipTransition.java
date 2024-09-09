@@ -43,7 +43,6 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SPLIT;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 
-import android.animation.Animator;
 import android.annotation.IntDef;
 import android.app.ActivityManager;
 import android.app.TaskInfo;
@@ -377,9 +376,16 @@ public class PipTransition extends PipTransitionController {
 
     @Override
     public void end() {
-        Animator animator = mPipAnimationController.getCurrentAnimator();
-        if (animator != null && animator.isRunning()) {
-            animator.end();
+        end(null);
+    }
+
+    @Override
+    public void end(@Nullable Runnable onTransitionEnd) {
+        if (mPipAnimationController.isAnimating()) {
+            mPipAnimationController.getCurrentAnimator().end();
+        }
+        if (onTransitionEnd != null) {
+            onTransitionEnd.run();
         }
     }
 
@@ -480,6 +486,14 @@ public class PipTransition extends PipTransitionController {
                     // activity windowing mode, and set the task bounds to the final bounds
                     wct.setActivityWindowingMode(taskInfo.token, WINDOWING_MODE_UNDEFINED);
                     wct.setBounds(taskInfo.token, destinationBounds);
+                    // If the animation is only used to apply destination bounds immediately and
+                    // invisibly, then reshow it until the pip is drawn with the bounds.
+                    final PipAnimationController.PipTransitionAnimator<?> animator =
+                            mPipAnimationController.getCurrentAnimator();
+                    if (animator != null && animator.getEndValue().equals(0f)) {
+                        tx.addTransactionCommittedListener(mTransitions.getMainExecutor(),
+                                () -> fadeExistingPip(true /* show */));
+                    }
                 } else {
                     wct.setBounds(taskInfo.token, null /* bounds */);
                 }
@@ -669,6 +683,7 @@ public class PipTransition extends PipTransitionController {
                     .setContainerLayer()
                     .setHidden(false)
                     .setParent(root.getLeash())
+                    .setCallsite("PipTransition.startExitAnimation")
                     .build();
             startTransaction.reparent(activitySurface, pipLeash);
             // Put the activity at local position with offset in case it is letterboxed.
@@ -1022,6 +1037,7 @@ public class PipTransition extends PipTransitionController {
         }
         startTransaction.apply();
 
+        int animationDuration = mEnterExitAnimationDuration;
         PipAnimationController.PipTransitionAnimator animator;
         if (enterAnimationType == ANIM_TYPE_BOUNDS) {
             animator = mPipAnimationController.getAnimator(taskInfo, leash, currentBounds,
@@ -1053,18 +1069,29 @@ public class PipTransition extends PipTransitionController {
                 }
             }
         } else if (enterAnimationType == ANIM_TYPE_ALPHA) {
+            // In case augmentRequest() is unable to apply the entering bounds (e.g. the request
+            // info only contains display change), keep the animation invisible (alpha 0) and
+            // duration 0 to apply the destination bounds. The actual fade-in animation will be
+            // done in onFinishResize() after the bounds are applied.
+            final boolean fadeInAfterOnFinishResize = rotationDelta != Surface.ROTATION_0
+                    && mFixedRotationState == FIXED_ROTATION_CALLBACK;
             animator = mPipAnimationController.getAnimator(taskInfo, leash, destinationBounds,
-                    0f, 1f);
+                    0f, fadeInAfterOnFinishResize ? 0f : 1f);
+            if (fadeInAfterOnFinishResize) {
+                animationDuration = 0;
+            }
             mSurfaceTransactionHelper
                     .crop(finishTransaction, leash, destinationBounds)
                     .round(finishTransaction, leash, true /* applyCornerRadius */);
+            // Always reset to bounds animation type afterwards.
+            setEnterAnimationType(ANIM_TYPE_BOUNDS);
         } else {
             throw new RuntimeException("Unrecognized animation type: " + enterAnimationType);
         }
         mPipOrganizer.setContentOverlay(animator.getContentOverlayLeash(), currentBounds);
         animator.setTransitionDirection(TRANSITION_DIRECTION_TO_PIP)
                 .setPipAnimationCallback(mPipAnimationCallback)
-                .setDuration(mEnterExitAnimationDuration);
+                .setDuration(animationDuration);
         if (rotationDelta != Surface.ROTATION_0
                 && mFixedRotationState == FIXED_ROTATION_TRANSITION) {
             // For fixed rotation, the animation destination bounds is in old rotation coordinates.

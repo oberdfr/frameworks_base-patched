@@ -19,9 +19,8 @@ package android.telephony;
 import android.annotation.NonNull;
 
 /**
- * A persistent logging client. Intended for persisting SOS/emergency related critical debug logs
- * in situations where standard Android logcat logs may not be retained long enough or available
- * for access.
+ * A persistent logging client. Intended for persisting critical debug logs in situations where
+ * standard Android logcat logs may not be retained long enough.
  *
  * @hide
  */

@@ -18,14 +18,18 @@ package com.android.settingslib.fuelgauge;
 
 import static android.provider.DeviceConfig.NAMESPACE_ACTIVITY_MANAGER;
 
+import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.IDeviceIdleController;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.telecom.DefaultDialerManager;
 import android.text.TextUtils;
@@ -86,25 +90,20 @@ public class PowerAllowlistBackend {
         }
     }
 
-    /**
-    * Check if target package is in System allow list
-    */
+    /** Check if target package is in System allow list */
     public boolean isSysAllowlisted(String pkg) {
         synchronized (mSysAllowlistedAppsLock) {
             return mSysAllowlistedApps.contains(pkg);
         }
     }
 
-    /**
-     * Check if target package is in allow list
-     */
+    /** Check if target package is in allow list */
     public boolean isAllowlisted(String pkg, int uid) {
         synchronized (mAllowlistedAppsLock) {
             if (mAllowlistedApps.contains(pkg)) {
                 return true;
             }
         }
-
         if (isDefaultActiveApp(pkg, uid)) {
             return true;
         }
@@ -112,13 +111,12 @@ public class PowerAllowlistBackend {
         return false;
     }
 
-    /**
-     * Check if it is default active app in multiple area(i.e. SMS, Dialer, Device admin..)
-     */
+    /** Check if it is default active app in multiple area */
     public boolean isDefaultActiveApp(String pkg, int uid) {
         // Additionally, check if pkg is default dialer/sms. They are considered essential apps and
         // should be automatically allowlisted (otherwise user may be able to set restriction on
         // them, leading to bad device behavior.)
+
         synchronized (mDefaultActiveAppsLock) {
             if (mDefaultActiveApps.contains(pkg)) {
                 return true;
@@ -138,6 +136,14 @@ public class PowerAllowlistBackend {
             return true;
         }
 
+        if (android.app.admin.flags.Flags.disallowUserControlBgUsageFix()) {
+            // App is subject to DevicePolicyManager.setUserControlDisabledPackages() policy.
+            final int userId = UserHandle.getUserId(uid);
+            if (mAppContext.getPackageManager().isPackageStateProtected(pkg, userId)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -148,9 +154,7 @@ public class PowerAllowlistBackend {
                 DEFAULT_SYSTEM_EXEMPT_POWER_RESTRICTIONS_ENABLED);
     }
 
-    /**
-     * Check if target package is in allow list except idle app
-     */
+    /** Check if target package is in allow list except idle app */
     public boolean isAllowlistedExceptIdle(String pkg) {
         try {
             return mDeviceIdleService.isPowerSaveWhitelistExceptIdleApp(pkg);
@@ -161,6 +165,7 @@ public class PowerAllowlistBackend {
     }
 
     /**
+     * Check if target package is in allow list except idle app
      *
      * @param pkgs a list of packageName
      * @return true when one of package is in allow list
@@ -179,38 +184,89 @@ public class PowerAllowlistBackend {
     }
 
     /**
-     * Add app into power save allow list.
-     * @param pkg packageName
+     * Add app into power save allow list
+     *
+     * @param pkg packageName of the app
      */
-    public synchronized void addApp(String pkg) {
+    public void addApp(String pkg) {
+        addApp(pkg, Process.INVALID_UID);
+    }
+
+    /**
+     * Add app into power save allow list
+     *
+     * @param pkg packageName of the app
+     * @param uid uid of the app
+     */
+    public synchronized void addApp(String pkg, int uid) {
         try {
+            if (android.app.Flags.appRestrictionsApi()) {
+                if (uid == Process.INVALID_UID) {
+                    uid = mAppContext.getSystemService(PackageManager.class).getPackageUid(pkg, 0);
+                }
+                final boolean wasInList = isAllowlisted(pkg, uid);
+
+                if (!wasInList) {
+                    mAppContext.getSystemService(ActivityManager.class).noteAppRestrictionEnabled(
+                            pkg, uid, ActivityManager.RESTRICTION_LEVEL_EXEMPTED,
+                            true, ActivityManager.RESTRICTION_REASON_USER,
+                            "settings", ActivityManager.RESTRICTION_SOURCE_USER, 0);
+                }
+            }
+
             mDeviceIdleService.addPowerSaveWhitelistApp(pkg);
             synchronized (mAllowlistedAppsLock) {
                 mAllowlistedApps.add(pkg);
             }
         } catch (RemoteException e) {
             Log.w(TAG, "Unable to reach IDeviceIdleController", e);
+        } catch (NameNotFoundException e) {
+            Log.w(TAG, "Unable to find package", e);
         }
     }
 
     /**
-     * Remove package from power save allow list.
-     * @param pkg
+     * Remove package from power save allow list
+     *
+     * @param pkg packageName of the app
      */
-    public synchronized void removeApp(String pkg) {
+    public void removeApp(String pkg) {
+        removeApp(pkg, Process.INVALID_UID);
+    }
+
+    /**
+     * Remove package from power save allow list.
+     *
+     * @param pkg packageName of the app
+     * @param uid uid of the app
+     */
+    public synchronized void removeApp(String pkg, int uid) {
         try {
+            if (android.app.Flags.appRestrictionsApi()) {
+                if (uid == Process.INVALID_UID) {
+                    uid = mAppContext.getSystemService(PackageManager.class).getPackageUid(pkg, 0);
+                }
+                final boolean wasInList = isAllowlisted(pkg, uid);
+                if (wasInList) {
+                    mAppContext.getSystemService(ActivityManager.class).noteAppRestrictionEnabled(
+                            pkg, uid, ActivityManager.RESTRICTION_LEVEL_EXEMPTED,
+                            false, ActivityManager.RESTRICTION_REASON_USER,
+                            "settings", ActivityManager.RESTRICTION_SOURCE_USER, 0L);
+                }
+            }
+
             mDeviceIdleService.removePowerSaveWhitelistApp(pkg);
             synchronized (mAllowlistedAppsLock) {
                 mAllowlistedApps.remove(pkg);
             }
         } catch (RemoteException e) {
             Log.w(TAG, "Unable to reach IDeviceIdleController", e);
+        } catch (NameNotFoundException e) {
+            Log.w(TAG, "Unable to find package", e);
         }
     }
 
-    /**
-     * Refresh all of lists
-     */
+    /** Refresh all of lists */
     @VisibleForTesting
     public synchronized void refreshList() {
         synchronized (mSysAllowlistedAppsLock) {
@@ -262,10 +318,7 @@ public class PowerAllowlistBackend {
         }
     }
 
-    /**
-     * @param context
-     * @return a PowerAllowlistBackend object
-     */
+    /** Get the {@link PowerAllowlistBackend} instance */
     public static PowerAllowlistBackend getInstance(Context context) {
         synchronized (PowerAllowlistBackend.class) {
             if (sInstance == null) {

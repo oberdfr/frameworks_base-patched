@@ -21,6 +21,7 @@ import android.annotation.DrawableRes
 import android.annotation.RawRes
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.hardware.face.Face
 import android.util.RotationUtils
 import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
@@ -87,25 +88,14 @@ constructor(
                     params.naturalDisplayHeight,
                     rotation.ordinal
                 )
-                rotatedBounds
+                Rect(
+                    rotatedBounds.left,
+                    rotatedBounds.top,
+                    params.logicalDisplayWidth - rotatedBounds.right,
+                    params.logicalDisplayHeight - rotatedBounds.bottom
+                )
             }
             .distinctUntilChanged()
-
-    val iconPosition: Flow<Rect> =
-        combine(udfpsSensorBounds, promptViewModel.size, promptViewModel.modalities) {
-            sensorBounds,
-            size,
-            modalities ->
-            // If not Udfps, icon does not change from default layout position
-            if (!modalities.hasUdfps) {
-                Rect() // Empty rect, don't offset from default position
-            } else if (size.isSmall) {
-                // When small with Udfps, only set horizontal position
-                Rect(sensorBounds.left, -1, sensorBounds.right, -1)
-            } else {
-                sensorBounds
-            }
-        }
 
     /** Whether an error message is currently being shown. */
     val showingError = promptViewModel.showingError
@@ -124,13 +114,19 @@ constructor(
         _previousIconOverlayWasError.value = previousIconOverlayWasError
     }
 
-    /** Layout params for fingerprint iconView */
-    val fingerprintIconWidth: Flow<Int> = promptViewModel.fingerprintSensorDiameter
-    val fingerprintIconHeight: Flow<Int> = promptViewModel.fingerprintSensorDiameter
-
-    /** Layout params for face iconView */
-    val faceIconWidth: Int = promptViewModel.faceIconWidth
-    val faceIconHeight: Int = promptViewModel.faceIconHeight
+    val iconSize: Flow<Pair<Int, Int>> =
+        combine(
+            promptViewModel.position,
+            activeAuthType,
+            promptViewModel.legacyFingerprintSensorWidth,
+            promptViewModel.legacyFingerprintSensorHeight,
+        ) { _, activeAuthType, fingerprintSensorWidth, fingerprintSensorHeight ->
+            if (activeAuthType == AuthType.Face) {
+                Pair(promptViewModel.faceIconWidth, promptViewModel.faceIconHeight)
+            } else {
+                Pair(fingerprintSensorWidth, fingerprintSensorHeight)
+            }
+        }
 
     /** Current BiometricPromptLayout.iconView asset. */
     val iconAsset: Flow<Int> =

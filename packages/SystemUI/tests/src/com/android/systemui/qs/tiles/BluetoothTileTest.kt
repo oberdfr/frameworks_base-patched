@@ -4,15 +4,16 @@ import android.bluetooth.BluetoothDevice
 import android.os.Handler
 import android.os.Looper
 import android.os.UserManager
-import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.Utils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.bluetooth.qsdialog.BluetoothTileDialogViewModel
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.plugins.ActivityStarter
@@ -23,7 +24,6 @@ import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
-import com.android.systemui.qs.tiles.dialog.bluetooth.BluetoothTileDialogViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.BluetoothController
 import com.android.systemui.util.mockito.any
@@ -42,7 +42,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
-@RunWith(AndroidTestingRunner::class)
+@RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class BluetoothTileTest : SysuiTestCase() {

@@ -838,7 +838,7 @@ public class BatterySaverStateMachine {
             if (Flags.updateAutoTurnOnNotificationStringAndAction()) {
                 triggerDynamicModeNotificationV2();
             } else {
-                triggerDynamicModeNotificationV2();
+                triggerDynamicModeNotification();
             }
         } else if (!enable) {
             hideDynamicModeNotification();

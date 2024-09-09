@@ -75,11 +75,11 @@ import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 
-import java.util.List;
-import java.util.concurrent.Executor;
-
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.Job;
+
+import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * Dialog for showing mobile network, connected Wi-Fi network and Wi-Fi networks.
@@ -213,7 +213,7 @@ public class InternetDialogDelegate implements
         mCoroutineScope = coroutineScope;
         mUiEventLogger = uiEventLogger;
         mDialogTransitionAnimator = dialogTransitionAnimator;
-        mAdapter = new InternetAdapter(mInternetDialogController);
+        mAdapter = new InternetAdapter(mInternetDialogController, coroutineScope);
     }
 
     @Override
@@ -450,7 +450,7 @@ public class InternetDialogDelegate implements
     }
 
     private void setMobileDataLayout(SystemUIDialog dialog, boolean activeNetworkIsCellular,
-                                     boolean isCarrierNetworkActive) {
+            boolean isCarrierNetworkActive) {
         boolean isNetworkConnected = activeNetworkIsCellular || isCarrierNetworkActive;
         // 1. Mobile network should be gone if airplane mode ON or the list of active
         //    subscriptionId is null.
@@ -489,6 +489,10 @@ public class InternetDialogDelegate implements
             mMobileDataToggle.setVisibility(mCanConfigMobileData ? View.VISIBLE : View.INVISIBLE);
             mMobileToggleDivider.setVisibility(
                     mCanConfigMobileData ? View.VISIBLE : View.INVISIBLE);
+            int primaryColor = isNetworkConnected
+                    ? R.color.connected_network_primary_color
+                    : R.color.disconnected_network_primary_color;
+            mMobileToggleDivider.setBackgroundColor(dialog.getContext().getColor(primaryColor));
 
             // Display the info for the non-DDS if it's actively being used
             int autoSwitchNonDdsSubId = mInternetDialogController.getActiveAutoSwitchNonDdsSubId();
@@ -516,7 +520,8 @@ public class InternetDialogDelegate implements
                 mSecondaryMobileTitleText.setTextAppearance(
                         R.style.TextAppearance_InternetDialog_Active);
 
-                TextView mSecondaryMobileSummaryText = mDialogView.requireViewById(R.id.secondary_mobile_summary);
+                TextView mSecondaryMobileSummaryText =
+                        mDialogView.requireViewById(R.id.secondary_mobile_summary);
                 summary = getMobileNetworkSummary(autoSwitchNonDdsSubId);
                 if (!TextUtils.isEmpty(summary)) {
                     mSecondaryMobileSummaryText.setText(

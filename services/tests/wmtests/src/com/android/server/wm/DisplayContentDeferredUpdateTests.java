@@ -65,14 +65,12 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
 
     @Override
     protected void onBeforeSystemServicesCreated() {
-        // Set other flags to their default values
-        mSetFlagsRule.initAllFlagsToReleaseConfigDefault();
-
         mSetFlagsRule.enableFlags(Flags.FLAG_DEFER_DISPLAY_UPDATES);
     }
 
     @Before
     public void before() {
+        doReturn(true).when(mDisplayContent).getLastHasContent();
         mockTransitionsController(/* enabled= */ true);
         mockRemoteDisplayChangeController();
         performInitialDisplayUpdate();

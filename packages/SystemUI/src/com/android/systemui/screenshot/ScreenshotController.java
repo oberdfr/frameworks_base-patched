@@ -19,6 +19,7 @@ package com.android.systemui.screenshot;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 
+import static com.android.systemui.Flags.screenshotPrivateProfileAccessibilityAnnouncementFix;
 import static com.android.systemui.Flags.screenshotShelfUi2;
 import static com.android.systemui.screenshot.LogConfig.DEBUG_ANIM;
 import static com.android.systemui.screenshot.LogConfig.DEBUG_CALLBACK;
@@ -97,11 +98,10 @@ import java.util.function.Consumer;
 
 import javax.inject.Provider;
 
-
 /**
  * Controls the state and flow for screenshots.
  */
-public class ScreenshotController {
+public class ScreenshotController implements ScreenshotHandler {
     private static final String TAG = logTag(ScreenshotController.class);
 
     /**
@@ -220,6 +220,7 @@ public class ScreenshotController {
 
 
     private final MessageContainerController mMessageContainerController;
+    private final AnnouncementResolver mAnnouncementResolver;
     private Bitmap mScreenBitmap;
     private SaveImageInBackgroundTask mSaveInBgTask;
     private boolean mScreenshotTakenInPortrait;
@@ -271,11 +272,11 @@ public class ScreenshotController {
             AssistContentRequester assistContentRequester,
             MessageContainerController messageContainerController,
             Provider<ScreenshotSoundController> screenshotSoundController,
+            AnnouncementResolver announcementResolver,
             @Assisted Display display,
             @Assisted boolean showUIOnExternalDisplay
     ) {
         mScreenshotSmartActions = screenshotSmartActions;
-        mWindowManager = windowManager;
         mNotificationsController = screenshotNotificationsControllerFactory.create(
                 display.getDisplayId());
         mUiEventLogger = uiEventLogger;
@@ -290,7 +291,9 @@ public class ScreenshotController {
 
         mScreenshotHandler = timeoutHandler;
         mScreenshotHandler.setDefaultTimeoutMillis(SCREENSHOT_CORNER_DEFAULT_TIMEOUT_MILLIS);
+
         mDisplay = display;
+        mWindowManager = windowManager;
         final Context displayContext = context.createDisplayContext(display);
         mContext = (WindowContext) displayContext.createWindowContext(TYPE_SCREENSHOT, null);
         mFlags = flags;
@@ -298,6 +301,7 @@ public class ScreenshotController {
         mUserManager = userManager;
         mMessageContainerController = messageContainerController;
         mAssistContentRequester = assistContentRequester;
+        mAnnouncementResolver = announcementResolver;
 
         mViewProxy = viewProxyFactory.getProxy(mContext, mDisplay.getDisplayId());
 
@@ -327,7 +331,7 @@ public class ScreenshotController {
 
 
         // Sound is only reproduced from the controller of the default display.
-        if (display.getDisplayId() == Display.DEFAULT_DISPLAY) {
+        if (mDisplay.getDisplayId() == Display.DEFAULT_DISPLAY) {
             mScreenshotSoundController = screenshotSoundController.get();
         } else {
             mScreenshotSoundController = null;
@@ -347,15 +351,16 @@ public class ScreenshotController {
         mShowUIOnExternalDisplay = showUIOnExternalDisplay;
     }
 
-    void handleScreenshot(ScreenshotData screenshot, Consumer<Uri> finisher,
+    @Override
+    public void handleScreenshot(ScreenshotData screenshot, Consumer<Uri> finisher,
             RequestCallback requestCallback) {
         Assert.isMainThread();
 
         mCurrentRequestCallback = requestCallback;
-        if (screenshot.getType() == WindowManager.TAKE_SCREENSHOT_FULLSCREEN) {
+        if (screenshot.getType() == WindowManager.TAKE_SCREENSHOT_FULLSCREEN
+                && screenshot.getBitmap() == null) {
             Rect bounds = getFullScreenRect();
-            screenshot.setBitmap(
-                    mImageCapture.captureDisplay(mDisplay.getDisplayId(), bounds));
+            screenshot.setBitmap(mImageCapture.captureDisplay(mDisplay.getDisplayId(), bounds));
             screenshot.setScreenBounds(bounds);
         }
 
@@ -464,12 +469,20 @@ public class ScreenshotController {
 
     void prepareViewForNewScreenshot(@NonNull ScreenshotData screenshot, String oldPackageName) {
         withWindowAttached(() -> {
-            if (mUserManager.isManagedProfile(screenshot.getUserHandle().getIdentifier())) {
-                mViewProxy.announceForAccessibility(mContext.getResources().getString(
-                        R.string.screenshot_saving_work_profile_title));
+            if (screenshotPrivateProfileAccessibilityAnnouncementFix()) {
+                mAnnouncementResolver.getScreenshotAnnouncement(
+                        screenshot.getUserHandle().getIdentifier(),
+                        announcement -> {
+                            mViewProxy.announceForAccessibility(announcement);
+                        });
             } else {
-                mViewProxy.announceForAccessibility(
-                        mContext.getResources().getString(R.string.screenshot_saving_title));
+                if (mUserManager.isManagedProfile(screenshot.getUserHandle().getIdentifier())) {
+                    mViewProxy.announceForAccessibility(mContext.getResources().getString(
+                            R.string.screenshot_saving_work_profile_title));
+                } else {
+                    mViewProxy.announceForAccessibility(
+                            mContext.getResources().getString(R.string.screenshot_saving_title));
+                }
             }
         });
 
@@ -1037,9 +1050,9 @@ public class ScreenshotController {
     @AssistedFactory
     public interface Factory {
         /**
-         * Creates an instance of the controller for that specific displayId.
+         * Creates an instance of the controller for that specific display.
          *
-         * @param display                 Display to capture.
+         * @param display                 display to capture
          * @param showUIOnExternalDisplay Whether the UI should be shown if this is an external
          *                                display.
          */

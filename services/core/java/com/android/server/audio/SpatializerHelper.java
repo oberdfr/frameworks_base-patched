@@ -347,9 +347,6 @@ public class SpatializerHelper {
     //------------------------------------------------------
     // routing monitoring
     synchronized void onRoutingUpdated() {
-        if (!mFeatureEnabled) {
-            return;
-        }
         switch (mState) {
             case STATE_UNINITIALIZED:
             case STATE_NOT_SUPPORTED:
@@ -393,7 +390,7 @@ public class SpatializerHelper {
             setDispatchAvailableState(false);
         }
 
-        boolean enabled = able && enabledAvailable.first;
+        boolean enabled = mFeatureEnabled && able && enabledAvailable.first;
         if (enabled) {
             loglogi("Enabling Spatial Audio since enabled for media device:"
                     + currentDevice);
@@ -571,7 +568,8 @@ public class SpatializerHelper {
             updatedDevice = new AdiDeviceState(canonicalDeviceType, ada.getInternalType(),
                     ada.getAddress());
             initSAState(updatedDevice);
-            mDeviceBroker.addOrUpdateDeviceSAStateInInventory(updatedDevice);
+            mDeviceBroker.addOrUpdateDeviceSAStateInInventory(
+                    updatedDevice, true /*syncInventory*/);
         }
         if (updatedDevice != null) {
             onRoutingUpdated();
@@ -726,7 +724,7 @@ public class SpatializerHelper {
                     new AdiDeviceState(canonicalDeviceType, ada.getInternalType(),
                             ada.getAddress());
             initSAState(deviceState);
-            mDeviceBroker.addOrUpdateDeviceSAStateInInventory(deviceState);
+            mDeviceBroker.addOrUpdateDeviceSAStateInInventory(deviceState, true /*syncInventory*/);
             mDeviceBroker.postPersistAudioDeviceSettings();
             logDeviceState(deviceState, "addWirelessDeviceIfNew"); // may be updated later.
         }

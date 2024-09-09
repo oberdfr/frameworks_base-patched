@@ -44,6 +44,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.CoreStartable;
+import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.WMComponent;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -56,6 +57,8 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.util.kotlin.JavaAdapter;
+import com.android.wm.shell.common.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.desktopmode.DesktopMode;
 import com.android.wm.shell.desktopmode.DesktopModeTaskRepository;
 import com.android.wm.shell.onehanded.OneHanded;
@@ -96,7 +99,7 @@ public final class WMShell implements
         CoreStartable,
         CommandQueue.Callbacks {
     private static final String TAG = WMShell.class.getName();
-    private static final int INVALID_SYSUI_STATE_MASK =
+    private static final long INVALID_SYSUI_STATE_MASK =
             SYSUI_STATE_DIALOG_SHOWING
                     | SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING
                     | SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED
@@ -125,6 +128,8 @@ public final class WMShell implements
     private final UserTracker mUserTracker;
     private final DisplayTracker mDisplayTracker;
     private final NoteTaskInitializer mNoteTaskInitializer;
+    private final CommunalTransitionViewModel mCommunalTransitionViewModel;
+    private final JavaAdapter mJavaAdapter;
     private final Executor mSysUiMainExecutor;
 
     // Listeners and callbacks. Note that we prefer member variable over anonymous class here to
@@ -188,6 +193,8 @@ public final class WMShell implements
             UserTracker userTracker,
             DisplayTracker displayTracker,
             NoteTaskInitializer noteTaskInitializer,
+            CommunalTransitionViewModel communalTransitionViewModel,
+            JavaAdapter javaAdapter,
             @Main Executor sysUiMainExecutor) {
         mContext = context;
         mShell = shell;
@@ -206,6 +213,8 @@ public final class WMShell implements
         mUserTracker = userTracker;
         mDisplayTracker = displayTracker;
         mNoteTaskInitializer = noteTaskInitializer;
+        mCommunalTransitionViewModel = communalTransitionViewModel;
+        mJavaAdapter = javaAdapter;
         mSysUiMainExecutor = sysUiMainExecutor;
     }
 
@@ -259,6 +268,11 @@ public final class WMShell implements
             @Override
             public void moveFocusedTaskToFullscreen(int displayId) {
                 splitScreen.goToFullscreenFromSplit();
+            }
+
+            @Override
+            public void setSplitscreenFocus(boolean leftOrTop) {
+                splitScreen.setSplitscreenFocus(leftOrTop);
             }
         });
         splitScreen.registerSplitAnimationListener(new SplitScreen.SplitInvocationListener() {
@@ -366,14 +380,18 @@ public final class WMShell implements
                 }, mSysUiMainExecutor);
         mCommandQueue.addCallback(new CommandQueue.Callbacks() {
             @Override
-            public void enterDesktop(int displayId) {
-                desktopMode.enterDesktop(displayId);
+            public void moveFocusedTaskToDesktop(int displayId) {
+                desktopMode.moveFocusedTaskToDesktop(displayId,
+                        DesktopModeTransitionSource.KEYBOARD_SHORTCUT);
             }
-        });
-        mCommandQueue.addCallback(new CommandQueue.Callbacks() {
             @Override
             public void moveFocusedTaskToFullscreen(int displayId) {
-                desktopMode.moveFocusedTaskToFullscreen(displayId);
+                desktopMode.moveFocusedTaskToFullscreen(displayId,
+                        DesktopModeTransitionSource.KEYBOARD_SHORTCUT);
+            }
+            @Override
+            public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
+                desktopMode.moveFocusedTaskToStageSplit(displayId, leftOrTop);
             }
         });
     }
@@ -382,6 +400,8 @@ public final class WMShell implements
     void initRecentTasks(RecentTasks recentTasks) {
         recentTasks.addAnimationStateListener(mSysUiMainExecutor,
                 mCommandQueue::onRecentsAnimationStateChanged);
+        mJavaAdapter.alwaysCollectFlow(mCommunalTransitionViewModel.getRecentsBackgroundColor(),
+                recentTasks::setTransitionBackgroundColor);
     }
 
     @Override

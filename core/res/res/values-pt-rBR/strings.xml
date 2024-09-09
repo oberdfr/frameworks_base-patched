@@ -85,7 +85,7 @@
     <string name="NetworkPreferenceSwitchTitle" msgid="1008329951315753038">"Não foi possível acessar a rede móvel"</string>
     <string name="NetworkPreferenceSwitchSummary" msgid="2086506181486324860">"Tente alterar a rede preferencial. Toque para alterar."</string>
     <string name="EmergencyCallWarningTitle" msgid="1615688002899152860">"Chamadas de emergência indisponíveis"</string>
-    <string name="EmergencyCallWarningSummary" msgid="1194185880092805497">"Não é possível fazer chamadas de emergência por Wi‑Fi"</string>
+    <string name="EmergencyCallWarningSummary" msgid="9102799172089265268">"As chamadas de emergência exigem uma rede móvel"</string>
     <string name="notification_channel_network_alert" msgid="4788053066033851841">"Alertas"</string>
     <string name="notification_channel_call_forward" msgid="8230490317314272406">"Encaminhamento de chamada"</string>
     <string name="notification_channel_emergency_callback" msgid="54074839059123159">"Modo de retorno de chamada de emergência"</string>
@@ -154,16 +154,19 @@
     <string name="cfTemplateForwardedTime" msgid="735042369233323609">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g> após <xliff:g id="TIME_DELAY">{2}</xliff:g> segundos"</string>
     <string name="cfTemplateRegistered" msgid="5619930473441550596">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: Não encaminhado"</string>
     <string name="cfTemplateRegisteredTime" msgid="5222794399642525045">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: Não encaminhado"</string>
-    <string name="scCellularNetworkSecurityTitle" msgid="90330018476923559">"Segurança da rede celular"</string>
-    <string name="scCellularNetworkSecuritySummary" msgid="8659128412709908263">"Revisar configurações"</string>
-    <string name="scIdentifierDisclosureIssueTitle" msgid="3737384845335568193">"Identificador do dispositivo acessado"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="3870743771498510600">"Uma rede na conexão <xliff:g id="DISCLOSURE_NETWORK">%4$s</xliff:g> gravou o identificador exclusivo (IMSI) do seu dispositivo <xliff:g id="DISCLOSURE_COUNT">%1$d</xliff:g> vezes no período entre <xliff:g id="DISCLOSURE_WINDOW_START_TIME">%2$tr</xliff:g> e <xliff:g id="DISCLOSURE_WINDOW_END_TIME">%3$tr</xliff:g>."</string>
-    <string name="scNullCipherIssueEncryptedTitle" msgid="8426373579673205292">"Conexão criptografada com <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
-    <string name="scNullCipherIssueEncryptedSummary" msgid="6437468449554283998">"Você se conectou a uma rede celular mais segura."</string>
-    <string name="scNullCipherIssueNonEncryptedTitle" msgid="2069674849204163569">"Conexão não criptografada com <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
-    <string name="scNullCipherIssueNonEncryptedSummary" msgid="3577092996366374833">"Você se conectou a uma rede celular não criptografada. Suas ligações, mensagens e dados estão vulneráveis a interceptação."</string>
-    <string name="scNullCipherIssueActionSettings" msgid="8378372959891478470">"Configurações de segurança da rede celular"</string>
+    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Segurança de rede móvel"</string>
+    <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Criptografia, notificações para redes não criptografadas"</string>
+    <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ID do dispositivo acessado"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Às <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registrou o ID exclusivo do seu dispositivo (IMSI ou IMEI) enquanto usava seu chip da <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Às <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registrou o ID exclusivo do seu dispositivo (IMSI ou IMEI) usando seu chip da <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nIsso significa que sua localização, atividade ou identidade foram registradas. Essa é uma prática comum, mas pode ser um problema para pessoas preocupadas com a privacidade."</string>
+    <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Conectado à rede criptografada <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
+    <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"A conexão do chip da <xliff:g id="NETWORK_NAME">%1$s</xliff:g> está mais segura agora"</string>
+    <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Conectado à rede não criptografada"</string>
+    <string name="scNullCipherIssueNonEncryptedSummaryNotification" msgid="7386936934128110388">"Suas ligações, mensagens e dados estão mais vulneráveis no momento ao usar seu chip da <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
+    <string name="scNullCipherIssueNonEncryptedSummary" msgid="5093428974513703253">"Ligações, mensagens e dados estão mais vulneráveis no momento ao usar seu chip da <xliff:g id="NETWORK_NAME">%1$s</xliff:g>.\n\nQuando a conexão for criptografada novamente, você vai receber outra notificação."</string>
+    <string name="scNullCipherIssueActionSettings" msgid="5888857706424639946">"Configurações de segurança da rede móvel"</string>
     <string name="scNullCipherIssueActionLearnMore" msgid="7896642417214757769">"Saiba mais"</string>
+    <string name="scNullCipherIssueActionGotIt" msgid="8747796640866585787">"Entendi"</string>
     <string name="fcComplete" msgid="1080909484660507044">"Código de recurso concluído."</string>
     <string name="fcError" msgid="5325116502080221346">"Problema de conexão ou código de recurso inválido."</string>
     <string name="httpErrorOk" msgid="6206751415788256357">"OK"</string>
@@ -199,6 +202,8 @@
     <string name="work_profile_deleted_description_dpm_wipe" msgid="2477244968924647232">"Seu perfil de trabalho não está mais disponível neste dispositivo"</string>
     <string name="work_profile_deleted_reason_maximum_password_failure" msgid="1080323158315663167">"Muitas tentativas de senha"</string>
     <string name="device_ownership_relinquished" msgid="4080886992183195724">"O administrador renunciou ao dispositivo para uso pessoal"</string>
+    <string name="private_space_deleted_by_admin" msgid="1484365588862066939">"Espaço privado removido"</string>
+    <string name="private_space_deleted_by_admin_details" msgid="7007781735201818689">"Sua organização não permite espaços privados neste dispositivo gerenciado."</string>
     <string name="network_logging_notification_title" msgid="554983187553845004">"O dispositivo é gerenciado"</string>
     <string name="network_logging_notification_text" msgid="1327373071132562512">"Sua organização gerencia este dispositivo e pode monitorar o tráfego de rede. Toque para ver detalhes."</string>
     <string name="location_changed_notification_title" msgid="3620158742816699316">"Os apps podem acessar seu local"</string>
@@ -281,6 +286,7 @@
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Ajuda de voz"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Bloqueio total"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"&gt;999"</string>
+    <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Responder"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Nova notificação"</string>
     <string name="notification_channel_physical_keyboard" msgid="5417306456125988096">"Teclado físico"</string>
     <string name="notification_channel_security" msgid="8516754650348238057">"Segurança"</string>
@@ -357,6 +363,7 @@
     <string name="capability_title_canTakeScreenshot" msgid="3895812893130071930">"Fazer uma captura de tela"</string>
     <string name="capability_desc_canTakeScreenshot" msgid="7762297374317934052">"Pode fazer uma captura de tela."</string>
     <string name="dream_preview_title" msgid="5570751491996100804">"Visualização, <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_accessibility_action_click" msgid="7392398629967797805">"dispensar"</string>
     <string name="permlab_statusBar" msgid="8798267849526214017">"desativar ou modificar a barra de status"</string>
     <string name="permdesc_statusBar" msgid="5809162768651019642">"Permite que o app desative a barra de status ou adicione e remova ícones do sistema."</string>
     <string name="permlab_statusBarService" msgid="2523421018081437981">"ser a barra de status"</string>
@@ -1184,6 +1191,8 @@
     <string name="deleteText" msgid="4200807474529938112">"Excluir"</string>
     <string name="inputMethod" msgid="1784759500516314751">"Método de entrada"</string>
     <string name="editTextMenuTitle" msgid="857666911134482176">"Ações de texto"</string>
+    <string name="error_handwriting_unsupported" msgid="7809438534946014050">"Não há suporte para escrita à mão neste campo"</string>
+    <string name="error_handwriting_unsupported_password" msgid="5095401146106891087">"Não há suporte para escrita à mão em campos de senha"</string>
     <string name="input_method_nav_back_button_desc" msgid="3655838793765691787">"Voltar"</string>
     <string name="input_method_ime_switch_button_desc" msgid="2736542240252198501">"Mudar o método de entrada"</string>
     <string name="low_internal_storage_view_title" msgid="9024241779284783414">"Pouco espaço de armazenamento"</string>
@@ -1875,7 +1884,7 @@
     <string name="restr_pin_error_too_short" msgid="1547007808237941065">"O PIN é curto demais. Deve ter pelo menos 4 dígitos."</string>
     <string name="restr_pin_try_later" msgid="5897719962541636727">"Tente novamente mais tarde"</string>
     <string name="immersive_cling_title" msgid="2307034298721541791">"Visualização em tela cheia"</string>
-    <string name="immersive_cling_description" msgid="7092737175345204832">"Para sair, deslize de cima para baixo."</string>
+    <string name="immersive_cling_description" msgid="2896205051090870978">"Para sair, deslize de cima para baixo na tela"</string>
     <string name="immersive_cling_positive" msgid="7047498036346489883">"Entendi"</string>
     <string name="display_rotation_camera_compat_toast_after_rotation" msgid="7600891546249829854">"Gire a tela para ter uma visualização melhor"</string>
     <string name="display_rotation_camera_compat_toast_in_multi_window" msgid="2473122980393502775">"Abra o app <xliff:g id="NAME">%s</xliff:g> em tela cheia para ter uma melhor visualização"</string>
@@ -1895,7 +1904,7 @@
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Pedir PIN antes de liberar"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrão de desbloqueio antes de liberar"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir senha antes de liberar"</string>
-    <string name="package_installed_device_owner" msgid="7035926868974878525">"Instalado pelo seu administrador"</string>
+    <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalado pelo administrador.\nAcesse as configurações para conferir as permissões concedidas"</string>
     <string name="package_updated_device_owner" msgid="7560272363805506941">"Atualizado pelo seu administrador"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Excluído pelo seu administrador"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
@@ -1928,6 +1937,9 @@
     <string name="zen_mode_implicit_trigger_description" msgid="5714956693073007111">"Gerenciada pelo app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="zen_mode_implicit_activated" msgid="2634285680776672994">"Ativada"</string>
     <string name="zen_mode_implicit_deactivated" msgid="8688441768371501750">"Desativada"</string>
+    <string name="zen_mode_trigger_summary_divider_text" msgid="7461583466043698862">", "</string>
+    <string name="zen_mode_trigger_summary_range_symbol_combination" msgid="1804900738798069619">"<xliff:g id="START">%1$s</xliff:g> a <xliff:g id="END">%2$s</xliff:g>"</string>
+    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Qualquer agenda"</string>
     <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> está silenciando alguns sons"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"Há um problema interno com seu dispositivo. Ele pode ficar instável até que você faça a redefinição para configuração original."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"Há um problema interno com seu dispositivo. Entre em contato com o fabricante para saber mais detalhes."</string>
@@ -2185,7 +2197,6 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Botão direcional: para a esquerda"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Botão direcional: para a direita"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Botão direcional: centro"</string>
-    <string name="accessibility_freeform_caption" msgid="8377519323496290122">"Barra de legendas do app <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> foi colocado no intervalo \"RESTRITO\""</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"enviou uma imagem"</string>
@@ -2212,6 +2223,8 @@
     <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"Trocar para o app de trabalho?"</string>
     <string name="miniresolver_call_information" msgid="6739417525304184083">"Sua organização só permite fazer ligações usando apps de trabalho"</string>
     <string name="miniresolver_sms_information" msgid="4311292661329483088">"Sua organização só permite o envio de mensagens usando apps de trabalho"</string>
+    <string name="miniresolver_private_space_phone_information" msgid="4469511223312488570">"É possível fazer ligações apenas usando seu app Telefone pessoal. Essas ligações telefônicas serão adicionadas ao seu histórico pessoal."</string>
+    <string name="miniresolver_private_space_messages_information" msgid="111285656327622118">"É possível enviar mensagens SMS apenas usando seu app Mensagens pessoal."</string>
     <string name="miniresolver_use_personal_browser" msgid="776072682871133308">"Usar o navegador pessoal"</string>
     <string name="miniresolver_use_work_browser" msgid="543575306251952994">"Usar o navegador de trabalho"</string>
     <string name="miniresolver_call" msgid="6386870060423480765">"Ligar"</string>
@@ -2391,11 +2404,19 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"Trabalho 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Teste"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Público"</string>
+    <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"Perfil de trabalho"</string>
+    <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Espaço privado"</string>
+    <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clone"</string>
+    <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Público"</string>
+    <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Espaço privado"</string>
+    <string name="redacted_notification_message" msgid="1520587845842228816">"Conteúdo de notificação sensível oculto"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
+    <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Conteúdo oculto no compartilhamento de tela por segurança"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Conectado automaticamente ao satélite"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Você pode enviar e receber mensagens sem um dispositivo móvel ou uma rede Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Abrir o app Mensagens"</string>
     <string name="satellite_notification_how_it_works" msgid="3132069321977520519">"Como funciona"</string>
+    <string name="unarchival_session_app_label" msgid="6811856981546348205">"Pendente…"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configurar o Desbloqueio por impressão digital de novo"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"A impressão digital <xliff:g id="FINGERPRINT">%s</xliff:g> não é mais reconhecida."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"As impressões digitais <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> não são mais reconhecidas."</string>

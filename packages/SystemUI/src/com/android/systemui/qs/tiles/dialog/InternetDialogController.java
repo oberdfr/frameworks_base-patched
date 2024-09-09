@@ -118,8 +118,6 @@ import javax.inject.Inject;
 public class InternetDialogController implements AccessPointController.AccessPointCallback {
 
     private static final String TAG = "InternetDialogController";
-    private static final String ACTION_NETWORK_PROVIDER_SETTINGS =
-            "android.settings.NETWORK_PROVIDER_SETTINGS";
     private static final String ACTION_WIFI_SCANNING_SETTINGS =
             "android.settings.WIFI_SCANNING_SETTINGS";
     /**
@@ -363,7 +361,8 @@ public class InternetDialogController implements AccessPointController.AccessPoi
 
     @VisibleForTesting
     protected Intent getSettingsIntent() {
-        return new Intent(ACTION_NETWORK_PROVIDER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return new Intent(Settings.ACTION_NETWORK_PROVIDER_SETTINGS).addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
     @Nullable
@@ -749,7 +748,7 @@ public class InternetDialogController implements AccessPointController.AccessPoi
         return summary;
     }
 
-    private void startActivity(Intent intent, View view) {
+    void startActivity(Intent intent, View view) {
         ActivityTransitionAnimator.Controller controller =
                 mDialogTransitionAnimator.createActivityTransitionController(view);
 
@@ -1473,7 +1472,8 @@ public class InternetDialogController implements AccessPointController.AccessPoi
 
     Intent getConfiguratorQrCodeGeneratorIntentOrNull(WifiEntry wifiEntry) {
         if (!mFeatureFlags.isEnabled(Flags.SHARE_WIFI_QS_BUTTON) || wifiEntry == null
-                || mWifiManager == null || !wifiEntry.canShare()) {
+                || mWifiManager == null || !wifiEntry.canShare()
+                || wifiEntry.getWifiConfiguration() == null) {
             return null;
         }
         Intent intent = new Intent();

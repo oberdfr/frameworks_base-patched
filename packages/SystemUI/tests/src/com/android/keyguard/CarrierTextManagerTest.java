@@ -50,9 +50,10 @@ import android.telephony.ServiceState;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.testing.AndroidTestingRunner;
 import android.text.TextUtils;
+
+import androidx.test.filters.SmallTest;
 
 import com.android.keyguard.logging.CarrierTextManagerLogger;
 import com.android.systemui.SysuiTestCase;
@@ -68,6 +69,8 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 
+import kotlinx.coroutines.test.TestScope;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,8 +82,6 @@ import org.mockito.invocation.InvocationOnMock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import kotlinx.coroutines.test.TestScope;
 
 @SmallTest
 @RunWith(AndroidTestingRunner.class)

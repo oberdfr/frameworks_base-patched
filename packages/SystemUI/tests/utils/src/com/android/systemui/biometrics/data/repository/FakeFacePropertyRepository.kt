@@ -19,11 +19,16 @@ package com.android.systemui.biometrics.data.repository
 
 import android.graphics.Point
 import com.android.systemui.biometrics.shared.model.LockoutMode
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.shared.model.DevicePosture
+import dagger.Binds
+import dagger.Module
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeFacePropertyRepository : FacePropertyRepository {
+@SysUISingleton
+class FakeFacePropertyRepository @Inject constructor() : FacePropertyRepository {
     private val faceSensorInfo = MutableStateFlow<FaceSensorInfo?>(null)
     override val sensorInfo: StateFlow<FaceSensorInfo?>
         get() = faceSensorInfo
@@ -58,4 +63,9 @@ class FakeFacePropertyRepository : FacePropertyRepository {
     fun setCameraIno(value: CameraInfo?) {
         currentCameraInfo.value = value
     }
+}
+
+@Module
+interface FakeFacePropertyRepositoryModule {
+    @Binds fun bindFake(fake: FakeFacePropertyRepository): FacePropertyRepository
 }

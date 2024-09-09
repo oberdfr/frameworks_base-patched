@@ -19,6 +19,7 @@ package com.android.systemui.navigationbar;
 import static android.inputmethodservice.InputMethodService.canImeRenderGesturalNavButtons;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 
+import static com.android.systemui.Flags.enableViewCaptureTracing;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_HOME_DISABLED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_OVERVIEW_DISABLED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_SEARCH_DISABLED;
@@ -37,6 +38,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.permission.SafeCloseable;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.AttributeSet;
@@ -59,6 +61,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
+import com.android.app.viewcapture.ViewCaptureFactory;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.Utils;
 import com.android.systemui.Gefingerpoken;
@@ -74,6 +77,7 @@ import com.android.systemui.recents.Recents;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.shade.ShadeViewController;
+import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.shared.rotation.FloatingRotationButton;
 import com.android.systemui.shared.rotation.RotationButton.RotationButtonUpdatesCallback;
 import com.android.systemui.shared.rotation.RotationButtonController;
@@ -148,7 +152,9 @@ public class NavigationBarView extends FrameLayout {
     private NavigationBarInflaterView mNavigationInflaterView;
     private Optional<Recents> mRecentsOptional = Optional.empty();
     @Nullable
-    private ShadeViewController mPanelView;
+    private ShadeViewController mShadeViewController;
+    @Nullable
+    private PanelExpansionInteractor mPanelExpansionInteractor;
     private FloatingRotationButton mFloatingRotationButton;
     private RotationButtonController mRotationButtonController;
 
@@ -174,6 +180,7 @@ public class NavigationBarView extends FrameLayout {
     private boolean mOverviewProxyEnabled;
     private boolean mShowSwipeUpUi;
     private UpdateActiveTouchRegionsCallback mUpdateActiveTouchRegionsCallback;
+    private SafeCloseable mViewCaptureCloseable;
 
     private class NavTransitionListener implements TransitionListener {
         private boolean mBackTransitioning;
@@ -343,8 +350,9 @@ public class NavigationBarView extends FrameLayout {
     }
 
     /** */
-    public void setComponents(ShadeViewController panel) {
-        mPanelView = panel;
+    public void setComponents(ShadeViewController svc, PanelExpansionInteractor pei) {
+        mShadeViewController = svc;
+        mPanelExpansionInteractor = pei;
         updatePanelSystemUiStateFlags();
     }
 
@@ -732,10 +740,10 @@ public class NavigationBarView extends FrameLayout {
 
     private void updatePanelSystemUiStateFlags() {
         if (SysUiState.DEBUG) {
-            Log.d(TAG, "Updating panel sysui state flags: panelView=" + mPanelView);
+            Log.d(TAG, "Updating panel sysui state flags: panelView=" + mShadeViewController);
         }
-        if (mPanelView != null) {
-            mPanelView.updateSystemUiStateFlags();
+        if (mShadeViewController != null) {
+            mShadeViewController.updateSystemUiStateFlags();
         }
     }
 
@@ -783,7 +791,8 @@ public class NavigationBarView extends FrameLayout {
      */
     void updateSlippery() {
         setSlippery(!isQuickStepSwipeUpEnabled() ||
-                (mPanelView != null && mPanelView.isFullyExpanded() && !mPanelView.isCollapsing()));
+                (mPanelExpansionInteractor != null && mPanelExpansionInteractor.isFullyExpanded()
+                        && !mPanelExpansionInteractor.isCollapsing()));
     }
 
     void setSlippery(boolean slippery) {
@@ -1072,6 +1081,10 @@ public class NavigationBarView extends FrameLayout {
         }
 
         updateNavButtonIcons();
+        if (enableViewCaptureTracing()) {
+            mViewCaptureCloseable = ViewCaptureFactory.getInstance(getContext())
+                    .startCapture(getRootView(), ".NavigationBarView");
+        }
     }
 
     @Override
@@ -1083,6 +1096,9 @@ public class NavigationBarView extends FrameLayout {
         if (mRotationButtonController != null) {
             mFloatingRotationButton.hide();
             mRotationButtonController.unregisterListeners();
+        }
+        if (mViewCaptureCloseable != null) {
+            mViewCaptureCloseable.close();
         }
     }
 

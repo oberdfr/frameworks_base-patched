@@ -40,6 +40,8 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.Display.INVALID_DISPLAY;
+import static android.view.Surface.ROTATION_270;
+import static android.view.Surface.ROTATION_90;
 import static android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_OPEN_BEHIND;
@@ -87,6 +89,7 @@ import android.content.PermissionChecker;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
@@ -354,12 +357,19 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     /**
      * Whether the activity navigation should be isolated. That is, Activities cannot be launched
-     * on an isolated TaskFragment, unless the activity is launched from an Activity in the same
-     * isolated TaskFragment, or explicitly requested to be launched to.
-     * <p>
-     * Note that only an embedded TaskFragment can be isolated.
+     * on an isolated TaskFragment unless explicitly requested to be launched to.
      */
     private boolean mIsolatedNav;
+
+    /**
+     * Whether the TaskFragment to be pinned.
+     * <p>
+     * If a TaskFragment is pinned, the TaskFragment should be the top-most TaskFragment among other
+     * sibling TaskFragments. Any newly launched and embeddable activity should not be placed in the
+     * pinned TaskFragment, unless the activity is launched from the pinned TaskFragment or
+     * explicitly requested to. Non-embeddable activities are not restricted to.
+     */
+    private boolean mPinned;
 
     /**
      * Whether the TaskFragment should move to bottom of task when any activity below it is
@@ -515,6 +525,18 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     /**
+     * Sets whether this TaskFragment {@link #isPinned()}.
+     * <p>
+     * Note that this is no-op if the TaskFragment is not {@link #isEmbedded() embedded}.
+     */
+    void setPinned(boolean pinned) {
+        if (!isEmbedded()) {
+            return;
+        }
+        mPinned = pinned;
+    }
+
+    /**
      * Sets whether transitions are allowed when the TaskFragment is empty. If {@code true},
      * transitions are allowed when the TaskFragment is empty. If {@code false}, transitions
      * will wait until the TaskFragment becomes non-empty or other conditions are met. Default
@@ -530,6 +552,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     /** @see #mIsolatedNav */
     boolean isIsolatedNav() {
         return isEmbedded() && mIsolatedNav;
+    }
+
+    /**
+     * Indicates whether this TaskFragment is pinned.
+     *
+     * @see android.window.TaskFragmentOperation#OP_TYPE_SET_PINNED
+     */
+    boolean isPinned() {
+        return isEmbedded() && mPinned;
     }
 
     TaskFragment getAdjacentTaskFragment() {
@@ -564,7 +595,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     void setResumedActivity(ActivityRecord r, String reason) {
-        warnForNonLeafTaskFragment("setResumedActivity");
         if (mResumedActivity == r) {
             return;
         }
@@ -581,7 +611,13 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         final ActivityRecord prevR = mResumedActivity;
         mResumedActivity = r;
-        mTaskSupervisor.updateTopResumedActivityIfNeeded(reason);
+        final ActivityRecord topResumed = mTaskSupervisor.updateTopResumedActivityIfNeeded(reason);
+        if (mResumedActivity != null && topResumed != null && topResumed.isEmbedded()
+                && topResumed.getTaskFragment().getAdjacentTaskFragment() == this) {
+            // Explicitly updates the last resumed Activity if the resumed activity is
+            // adjacent to the top-resumed embedded activity.
+            mAtmService.setLastResumedActivityUncheckLocked(mResumedActivity, reason);
+        }
         if (r == null && prevR.mDisplayContent != null
                 && prevR.mDisplayContent.getFocusedRootTask() == null) {
             // Only need to notify DWPC when no activity will resume.
@@ -844,15 +880,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return parentTaskFragment != null ? parentTaskFragment.getOrganizedTaskFragment() : null;
     }
 
-    /**
-     * Simply check and give warning logs if this is not operated on leaf {@link TaskFragment}.
-     */
-    private void warnForNonLeafTaskFragment(String func) {
-        if (!isLeafTaskFragment()) {
-            Slog.w(TAG, func + " on non-leaf task fragment " + this);
-        }
-    }
-
     boolean hasDirectChildActivities() {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             if (mChildren.get(i).asActivityRecord() != null) {
@@ -902,8 +929,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return mForceTranslucent;
     }
 
-    void setForceTranslucent(boolean set) {
+    boolean setForceTranslucent(boolean set) {
+        if (mForceTranslucent == set) {
+            return false;
+        }
         mForceTranslucent = set;
+        return true;
     }
 
     boolean isLeafTaskFragment() {
@@ -925,7 +956,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      */
     void onActivityStateChanged(ActivityRecord record, ActivityRecord.State state,
             String reason) {
-        warnForNonLeafTaskFragment("onActivityStateChanged");
         if (record == mResumedActivity && state != RESUMED) {
             setResumedActivity(null, reason + " - onActivityStateChanged");
         }
@@ -955,7 +985,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      * @return {@code true} if the process of the pausing activity is died.
      */
     boolean handleAppDied(WindowProcessController app) {
-        warnForNonLeafTaskFragment("handleAppDied");
         boolean isPausingDied = false;
         if (mPausingActivity != null && mPausingActivity.app == app) {
             ProtoLog.v(WM_DEBUG_STATES, "App died while pausing: %s",
@@ -995,8 +1024,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             } else {
                 // Still have something resumed; can't sleep until it is paused.
                 ProtoLog.v(WM_DEBUG_STATES, "Sleep needs to pause %s", mResumedActivity);
-                startPausing(false /* userLeaving */, true /* uiSleeping */, null /* resuming */,
-                        "sleep");
+                startPausing(true /* uiSleeping */, null /* resuming */, "sleep");
             }
             shouldSleep = false;
         } else if (mPausingActivity != null) {
@@ -1076,21 +1104,34 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     ActivityRecord getTopNonFinishingActivity() {
-        return getTopNonFinishingActivity(true /* includeOverlays */);
+        return getTopNonFinishingActivity(
+                true /* includeOverlays */, true /* includeLaunchedFromBubble */);
     }
 
     /**
      * Returns the top-most non-finishing activity, even if the activity is NOT ok to show to
      * the current user.
      * @param includeOverlays whether the task overlay activity should be included.
+     * @param includeLaunchedFromBubble whether activities that were launched from a bubble should
+     *                                  be included.
      * @see #topRunningActivity(boolean)
      */
-    ActivityRecord getTopNonFinishingActivity(boolean includeOverlays) {
-        // Split into 2 to avoid object creation due to variable capture.
+    ActivityRecord getTopNonFinishingActivity(boolean includeOverlays,
+            boolean includeLaunchedFromBubble) {
+        // Split to avoid object creation due to variable capture.
         if (includeOverlays) {
-            return getActivity((r) -> !r.finishing);
+            if (includeLaunchedFromBubble) {
+                return getActivity(r -> !r.finishing);
+            } else {
+                return getActivity(r -> !r.finishing && !r.getLaunchedFromBubble());
+            }
         }
-        return getActivity((r) -> !r.finishing && !r.isTaskOverlay());
+        if (includeLaunchedFromBubble) {
+            return getActivity(r -> !r.finishing && !r.isTaskOverlay());
+        } else {
+            return getActivity(
+                    r -> !r.finishing && !r.isTaskOverlay() && !r.getLaunchedFromBubble());
+        }
     }
 
     ActivityRecord topRunningActivity() {
@@ -1214,7 +1255,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // have any running activities, not starting one and not home stack.
                 shouldBeVisible = hasRunningActivities
                         || (starting != null && starting.isDescendantOf(this))
-                        || isActivityTypeHome();
+                        || (isActivityTypeHome() && !isEmbedded());
                 break;
             }
 
@@ -1321,10 +1362,13 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
             // In a multi-resumed environment, like in a freeform device, the top
             // activity can be resumed, but it might not be the focused app.
-            // Set focused app when top activity is resumed
-            if (taskDisplayArea.inMultiWindowMode() && taskDisplayArea.mDisplayContent != null
-                    && taskDisplayArea.mDisplayContent.mFocusedApp != next) {
-                taskDisplayArea.mDisplayContent.setFocusedApp(next);
+            // Set focused app when top activity is resumed. However, we shouldn't do it for a
+            // same task because it can break focused state. (e.g. activity embedding)
+            if (taskDisplayArea.inMultiWindowMode() && taskDisplayArea.mDisplayContent != null) {
+                final ActivityRecord focusedApp = taskDisplayArea.mDisplayContent.mFocusedApp;
+                if (focusedApp == null || focusedApp.getTask() != next.getTask()) {
+                    taskDisplayArea.mDisplayContent.setFocusedApp(next);
+                }
             }
             ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: Top activity "
                     + "resumed %s", next);
@@ -1535,10 +1579,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
             next.setState(RESUMED, "resumeTopActivity");
 
-            // Have the window manager re-evaluate the orientation of
-            // the screen based on the new activity order.
-            boolean notUpdated = true;
-
             // Activity should also be visible if set mLaunchTaskBehind to true (see
             // ActivityRecord#shouldBeVisibleIgnoringKeyguard()).
             if (shouldBeVisible(next)) {
@@ -1550,28 +1590,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // result of invisible window resize.
                 // TODO: Remove this once visibilities are set correctly immediately when
                 // starting an activity.
-                notUpdated = !mRootWindowContainer.ensureVisibilityAndConfig(next, getDisplayId(),
+                final int originalRelaunchingCount = next.mPendingRelaunchCount;
+                mRootWindowContainer.ensureVisibilityAndConfig(next, mDisplayContent,
                         false /* deferResume */);
-            }
-
-            if (notUpdated) {
-                // The configuration update wasn't able to keep the existing
-                // instance of the activity, and instead started a new one.
-                // We should be all done, but let's just make sure our activity
-                // is still at the top and schedule another run if something
-                // weird happened.
-                ActivityRecord nextNext = topRunningActivity();
-                ProtoLog.i(WM_DEBUG_STATES, "Activity config changed during resume: "
-                        + "%s, new next: %s", next, nextNext);
-                if (nextNext != next) {
-                    // Do over!
-                    mTaskSupervisor.scheduleResumeTopActivities();
+                if (next.mPendingRelaunchCount > originalRelaunchingCount) {
+                    // The activity is scheduled to relaunch, then ResumeActivityItem will be also
+                    // included (see ActivityRecord#relaunchActivityLocked) if it should resume.
+                    next.completeResumeLocked();
+                    return true;
                 }
-                if (!next.isVisibleRequested() || next.mAppStopped) {
-                    next.setVisibility(true);
-                }
-                next.completeResumeLocked();
-                return true;
             }
 
             try {
@@ -1654,17 +1681,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 return true;
             }
 
-            // From this point on, if something goes wrong there is no way
-            // to recover the activity.
-            try {
-                next.completeResumeLocked();
-            } catch (Exception e) {
-                // If any exception gets thrown, toss away this
-                // activity and try the next one.
-                Slog.w(TAG, "Exception thrown during resume of " + next, e);
-                next.finishIfPossible("resume-exception", true /* oomAdj */);
-                return true;
-            }
+            next.completeResumeLocked();
         } else {
             // Whoops, need to restart this activity!
             if (!next.hasBeenLaunched) {
@@ -1883,7 +1900,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
             mAtmService.getLifecycleManager().scheduleTransactionItem(prev.app.getThread(),
                     PauseActivityItem.obtain(prev.token, prev.finishing, userLeaving,
-                            prev.configChangeFlags, pauseImmediately, autoEnteringPip));
+                            pauseImmediately, autoEnteringPip));
         } catch (Exception e) {
             // Ignore exception, if process died other code will cleanup.
             Slog.w(TAG, "Exception thrown during pause", e);
@@ -1906,6 +1923,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             prev.setWillCloseOrEnterPip(false);
             final boolean wasStopping = prev.isState(STOPPING);
             prev.setState(PAUSED, "completePausedLocked");
+            mPausingActivity = null;
             if (prev.finishing) {
                 // We will update the activity visibility later, no need to do in
                 // completeFinishing(). Updating visibility here might also making the next
@@ -1941,7 +1959,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             if (prev != null) {
                 prev.stopFreezingScreen(true /* unfreezeNow */, true /* force */);
             }
-            mPausingActivity = null;
         }
 
         if (resumeNext) {
@@ -1989,6 +2006,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return super.getOrientation(candidate);
         }
         return SCREEN_ORIENTATION_UNSET;
+    }
+
+    @ActivityInfo.ScreenOrientation
+    @Override
+    protected int getOverrideOrientation() {
+        if (isEmbedded() && !isVisibleRequested()) {
+            return SCREEN_ORIENTATION_UNSPECIFIED;
+        }
+        return super.getOverrideOrientation();
     }
 
     /**
@@ -2215,7 +2241,42 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     static class ConfigOverrideHint {
         @Nullable DisplayInfo mTmpOverrideDisplayInfo;
         @Nullable ActivityRecord.CompatDisplayInsets mTmpCompatInsets;
-        boolean mUseOverrideInsetsForStableBounds;
+        @Nullable Rect mParentAppBoundsOverride;
+        int mTmpOverrideConfigOrientation;
+        boolean mUseOverrideInsetsForConfig;
+
+        void resolveTmpOverrides(DisplayContent dc, Configuration parentConfig,
+                boolean isFixedRotationTransforming) {
+            mParentAppBoundsOverride = new Rect(parentConfig.windowConfiguration.getAppBounds());
+            final Insets insets;
+            if (mUseOverrideInsetsForConfig && dc != null) {
+                // Insets are decoupled from configuration by default from V+, use legacy
+                // compatibility behaviour for apps targeting SDK earlier than 35
+                // (see applySizeOverrideIfNeeded).
+                int rotation = parentConfig.windowConfiguration.getRotation();
+                if (rotation == ROTATION_UNDEFINED && !isFixedRotationTransforming) {
+                    rotation = dc.getRotation();
+                }
+                final boolean rotated = (rotation == ROTATION_90 || rotation == ROTATION_270);
+                final int dw = rotated ? dc.mBaseDisplayHeight : dc.mBaseDisplayWidth;
+                final int dh = rotated ? dc.mBaseDisplayWidth : dc.mBaseDisplayHeight;
+                DisplayPolicy.DecorInsets.Info decorInsets = dc.getDisplayPolicy()
+                        .getDecorInsetsInfo(rotation, dw, dh);
+                final Rect stableBounds = decorInsets.mOverrideConfigFrame;
+                mTmpOverrideConfigOrientation = stableBounds.width() > stableBounds.height()
+                                ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
+                insets = Insets.of(decorInsets.mOverrideNonDecorInsets);
+            } else {
+                insets = Insets.NONE;
+            }
+            mParentAppBoundsOverride.inset(insets);
+        }
+
+        void resetTmpOverrides() {
+            mTmpOverrideDisplayInfo = null;
+            mTmpCompatInsets = null;
+            mTmpOverrideConfigOrientation = ORIENTATION_UNDEFINED;
+        }
     }
 
     void computeConfigResourceOverrides(@NonNull Configuration inOutConfig,
@@ -2248,11 +2309,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             @NonNull Configuration parentConfig, @Nullable ConfigOverrideHint overrideHint) {
         DisplayInfo overrideDisplayInfo = null;
         ActivityRecord.CompatDisplayInsets compatInsets = null;
-        boolean useOverrideInsetsForStableBounds = false;
+        boolean useOverrideInsetsForConfig = false;
         if (overrideHint != null) {
             overrideDisplayInfo = overrideHint.mTmpOverrideDisplayInfo;
             compatInsets = overrideHint.mTmpCompatInsets;
-            useOverrideInsetsForStableBounds = overrideHint.mUseOverrideInsetsForStableBounds;
+            useOverrideInsetsForConfig = overrideHint.mUseOverrideInsetsForConfig;
             if (overrideDisplayInfo != null) {
                 // Make sure the screen related configs can be computed by the provided
                 // display info.
@@ -2301,7 +2362,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             if (!customContainerPolicy && windowingMode != WINDOWING_MODE_FREEFORM) {
                 final Rect containingAppBounds;
                 if (insideParentBounds) {
-                    containingAppBounds = parentConfig.windowConfiguration.getAppBounds();
+                    containingAppBounds = useOverrideInsetsForConfig
+                            ? overrideHint.mParentAppBoundsOverride
+                            : parentConfig.windowConfiguration.getAppBounds();
                 } else {
                     // Restrict appBounds to display non-decor rather than parent because the
                     // override bounds are beyond the parent. Otherwise, it won't match the
@@ -2332,7 +2395,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // The non decor inset are areas that could never be removed in Honeycomb. See
                 // {@link WindowManagerPolicy#getNonDecorInsetsLw}.
                 calculateInsetFrames(mTmpNonDecorBounds, mTmpStableBounds, mTmpFullBounds, di,
-                        useOverrideInsetsForStableBounds);
+                        useOverrideInsetsForConfig);
             } else {
                 // Apply the given non-decor and stable insets to calculate the corresponding bounds
                 // for screen size of configuration.
@@ -2904,6 +2967,13 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return !mCreatedByOrganizer || mIsRemovalRequested;
     }
 
+    /**
+     * Returns whether this TaskFragment is going to be removed.
+     */
+    boolean isRemovalRequested() {
+        return mIsRemovalRequested;
+    }
+
     @Override
     void removeChild(WindowContainer child) {
         removeChild(child, true /* removeSelfIfPossible */);
@@ -2982,6 +3052,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     @Override
     void removeImmediately() {
+        if (asTask() == null) {
+            EventLogTags.writeWmTfRemoved(System.identityHashCode(this), getTaskId());
+        }
         mIsRemovalRequested = false;
         resetAdjacentTaskFragment();
         cleanUpEmbeddedTaskFragment();

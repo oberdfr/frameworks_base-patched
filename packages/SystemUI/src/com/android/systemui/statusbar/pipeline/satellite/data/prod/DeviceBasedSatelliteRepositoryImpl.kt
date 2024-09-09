@@ -36,7 +36,7 @@ import com.android.systemui.log.core.MessageInitializer
 import com.android.systemui.log.core.MessagePrinter
 import com.android.systemui.statusbar.pipeline.dagger.DeviceBasedSatelliteInputLog
 import com.android.systemui.statusbar.pipeline.dagger.VerboseDeviceBasedSatelliteInputLog
-import com.android.systemui.statusbar.pipeline.satellite.data.DeviceBasedSatelliteRepository
+import com.android.systemui.statusbar.pipeline.satellite.data.RealDeviceBasedSatelliteRepository
 import com.android.systemui.statusbar.pipeline.satellite.data.prod.DeviceBasedSatelliteRepositoryImpl.Companion.POLLING_INTERVAL_MS
 import com.android.systemui.statusbar.pipeline.satellite.data.prod.SatelliteSupport.Companion.whenSupported
 import com.android.systemui.statusbar.pipeline.satellite.data.prod.SatelliteSupport.NotSupported
@@ -154,7 +154,7 @@ constructor(
     @DeviceBasedSatelliteInputLog private val logBuffer: LogBuffer,
     @VerboseDeviceBasedSatelliteInputLog private val verboseLogBuffer: LogBuffer,
     private val systemClock: SystemClock,
-) : DeviceBasedSatelliteRepository {
+) : RealDeviceBasedSatelliteRepository {
 
     private val satelliteManager: SatelliteManager?
 

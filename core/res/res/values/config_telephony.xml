@@ -242,6 +242,12 @@
     <integer name="config_esim_bootstrap_data_limit_bytes">-1</integer>
     <java-symbol type="integer" name="config_esim_bootstrap_data_limit_bytes" />
 
+    <!-- Reevaluate existing data networks for bootstrap sim data usage at mentioned intervals
+         during esim bootstrap activation. If the value set is 0 or -1, default interval of
+         60000 millis will be set. -->
+    <integer name="config_reevaluate_bootstrap_sim_data_usage_millis">60000</integer>
+    <java-symbol type="integer" name="config_reevaluate_bootstrap_sim_data_usage_millis" />
+
     <!-- Telephony config for the PLMNs of all satellite providers. This is used by satellite modem
          to identify providers that should be ignored if the carrier config
          carrier_supported_satellite_services_per_provider_bundle does not support them.
@@ -350,6 +356,11 @@
     <bool name="config_enable_cellular_on_boot_default">true</bool>
     <java-symbol type="bool" name="config_enable_cellular_on_boot_default" />
 
+    <!-- Defines metrics pull cooldown period. The default cooldown period is 23 hours,
+         some Telephony metrics need to be pulled more frequently  -->
+    <integer name="config_metrics_pull_cooldown_millis">82800000</integer>
+    <java-symbol type="integer" name="config_metrics_pull_cooldown_millis" />
+
     <!-- The network capabilities that would be forced marked as cellular transport regardless it's
          on cellular or satellite-->
     <string-array name="config_force_cellular_transport_capabilities">
@@ -407,9 +418,16 @@
     <integer name="config_wait_for_datagram_sending_response_for_last_message_timeout_millis">60000</integer>
     <java-symbol type="integer" name="config_wait_for_datagram_sending_response_for_last_message_timeout_millis" />
 
+    <!-- Boolean indicating whether Telephony should force PhoneGlobals creation
+         regardless of FEATURE_TELEPHONY presence.
+         -->
+    <bool name="config_force_phone_globals_creation">false</bool>
+    <java-symbol type="bool" name="config_force_phone_globals_creation" />
+
     <!-- Boolean indicating whether to enable persistent logging via DropBoxManager.
      Used in persisting SOS/emergency related log messages.
      -->
     <bool name="config_dropboxmanager_persistent_logging_enabled">false</bool>
     <java-symbol type="bool" name="config_dropboxmanager_persistent_logging_enabled" />
+
 </resources>

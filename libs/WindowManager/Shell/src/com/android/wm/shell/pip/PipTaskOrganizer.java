@@ -63,7 +63,6 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemProperties;
-import android.util.Rational;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.Surface;
@@ -82,7 +81,6 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.common.annotations.ShellMainThread;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
@@ -92,6 +90,7 @@ import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.phone.PipMotionHelper;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.Transitions;
 
@@ -127,8 +126,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     private static final int EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS =
             SystemProperties.getInt(
                     "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
-
-    private static final float PIP_ASPECT_RATIO_MISMATCH_THRESHOLD = 0.005f;
 
     private final Context mContext;
     private final SyncTransactionQueue mSyncTransactionQueue;
@@ -616,11 +613,31 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
             return;
         }
 
+        if (mPipTransitionState.isEnteringPip()
+                && !mPipTransitionState.getInSwipePipToHomeTransition()) {
+            // If we are still entering PiP with Shell playing enter animation, jump-cut to
+            // the end of the enter animation and reschedule exitPip to run after enter-PiP
+            // has finished its transition and allowed the client to draw in PiP mode.
+            mPipTransitionController.end(() -> {
+                // TODO(341627042): force set to entered state to avoid potential stack overflow.
+                mPipTransitionState.setTransitionState(PipTransitionState.ENTERED_PIP);
+                exitPip(animationDurationMs, requestEnterSplit);
+            });
+            return;
+        }
+
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "exitPip: %s, state=%s", mTaskInfo.topActivity, mPipTransitionState);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         if (isLaunchIntoPipTask()) {
             exitLaunchIntoPipTask(wct);
+            return;
+        }
+
+        // bail early if leash is null
+        if (mLeash == null) {
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                    "exitPip: leash is null");
             return;
         }
 
@@ -808,37 +825,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
                     mPictureInPictureParams.getTitle());
             mPipParamsChangedForwarder.notifySubtitleChanged(
                     mPictureInPictureParams.getSubtitle());
-
-            if (mPictureInPictureParams.hasSourceBoundsHint()
-                    && mPictureInPictureParams.hasSetAspectRatio()) {
-                Rational sourceRectHintAspectRatio = new Rational(
-                        mPictureInPictureParams.getSourceRectHint().width(),
-                        mPictureInPictureParams.getSourceRectHint().height());
-                if (sourceRectHintAspectRatio.compareTo(
-                        mPictureInPictureParams.getAspectRatio()) != 0) {
-                    ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                            "Aspect ratio of source rect hint (%d/%d) does not match the provided "
-                                    + "aspect ratio value (%d/%d). Consider matching them for "
-                                    + "improved animation. Future releases might override the "
-                                    + "value to match.",
-                            mPictureInPictureParams.getSourceRectHint().width(),
-                            mPictureInPictureParams.getSourceRectHint().height(),
-                            mPictureInPictureParams.getAspectRatio().getNumerator(),
-                            mPictureInPictureParams.getAspectRatio().getDenominator());
-                }
-                if (Math.abs(sourceRectHintAspectRatio.floatValue()
-                        - mPictureInPictureParams.getAspectRatioFloat())
-                        > PIP_ASPECT_RATIO_MISMATCH_THRESHOLD) {
-                    ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                            "Aspect ratio of source rect hint (%f) does not match the provided "
-                                    + "aspect ratio value (%f) and is above threshold of %f. "
-                                    + "Consider matching them for improved animation. Future "
-                                    + "releases might override the value to match.",
-                            sourceRectHintAspectRatio.floatValue(),
-                            mPictureInPictureParams.getAspectRatioFloat(),
-                            PIP_ASPECT_RATIO_MISMATCH_THRESHOLD);
-                }
-            }
         }
 
         mPipUiEventLoggerLogger.setTaskInfo(mTaskInfo);
@@ -986,7 +972,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
 
     private void onEndOfSwipePipToHomeTransition() {
         if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            mPipTransitionController.setEnterAnimationType(ANIM_TYPE_BOUNDS);
             return;
         }
 
@@ -1996,6 +1981,8 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         }
         if (mPipTransitionState.getTransitionState() == PipTransitionState.UNDEFINED) {
             // Avoid double removal, which is fatal.
+            ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                    "%s: trying to remove overlay (%s) while in UNDEFINED state", TAG, surface);
             return;
         }
         if (surface == null || !surface.isValid()) {

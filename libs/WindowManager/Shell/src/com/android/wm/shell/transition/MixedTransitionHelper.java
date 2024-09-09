@@ -48,7 +48,7 @@ public class MixedTransitionHelper {
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback,
-            @NonNull Transitions player, @NonNull DefaultMixedHandler mixedHandler,
+            @NonNull Transitions player, @NonNull MixedTransitionHandler mixedHandler,
             @NonNull PipTransitionController pipHandler, @NonNull StageCoordinator splitHandler,
             boolean replacingPip) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "

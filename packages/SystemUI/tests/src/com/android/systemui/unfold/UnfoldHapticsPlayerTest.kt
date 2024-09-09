@@ -36,7 +36,7 @@ class UnfoldHapticsPlayerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
 
-    private val progressProvider = TestUnfoldTransitionProvider()
+    private val progressProvider = kosmos.fakeUnfoldTransitionProgressProvider
     private val vibrator = kosmos.vibrator
     private val transitionConfig = kosmos.unfoldTransitionConfig
     private val testFoldProvider = kosmos.foldProvider

@@ -67,7 +67,6 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArraySet;
@@ -388,11 +387,6 @@ class RecentTasks {
                     com.android.internal.R.integer.config_minNumVisibleRecentTasks_lowRam);
             mMaxNumVisibleTasks = res.getInteger(
                     com.android.internal.R.integer.config_maxNumVisibleRecentTasks_lowRam);
-        } else if (SystemProperties.getBoolean("ro.recents.grid", false)) {
-            mMinNumVisibleTasks = res.getInteger(
-                    com.android.internal.R.integer.config_minNumVisibleRecentTasks_grid);
-            mMaxNumVisibleTasks = res.getInteger(
-                    com.android.internal.R.integer.config_maxNumVisibleRecentTasks_grid);
         } else {
             mMinNumVisibleTasks = res.getInteger(
                     com.android.internal.R.integer.config_minNumVisibleRecentTasks);

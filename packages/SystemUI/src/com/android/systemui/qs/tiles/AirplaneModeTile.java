@@ -31,7 +31,6 @@ import android.provider.Settings.Global;
 import android.service.quicksettings.Tile;
 import android.sysprop.TelephonyProperties;
 import android.telephony.TelephonyManager;
-import android.view.View;
 import android.widget.Switch;
 
 import androidx.annotation.Nullable;
@@ -41,6 +40,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.telephony.flags.Flags;
 import com.android.settingslib.satellite.SatelliteDialogUtils;
+import com.android.systemui.animation.Expandable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -59,9 +59,9 @@ import com.android.systemui.util.settings.GlobalSettings;
 
 import dagger.Lazy;
 
-import javax.inject.Inject;
-
 import kotlinx.coroutines.Job;
+
+import javax.inject.Inject;
 
 /** Quick settings tile: Airplane mode **/
 public class AirplaneModeTile extends QSTileImpl<BooleanState> {
@@ -113,7 +113,7 @@ public class AirplaneModeTile extends QSTileImpl<BooleanState> {
     }
 
     @Override
-    public void handleClick(@Nullable View view) {
+    public void handleClick(@Nullable Expandable expandable) {
         boolean airplaneModeEnabled = mState.value;
         MetricsLogger.action(mContext, getMetricsCategory(), !airplaneModeEnabled);
         if (!airplaneModeEnabled && TelephonyProperties.in_ecm_mode().orElse(false)) {

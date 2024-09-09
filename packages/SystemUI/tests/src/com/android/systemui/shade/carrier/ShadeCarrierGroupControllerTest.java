@@ -63,6 +63,8 @@ import com.android.systemui.util.kotlin.FlowProviderKt;
 import com.android.systemui.utils.leaks.LeakCheckedTest;
 import com.android.systemui.utils.os.FakeHandler;
 
+import kotlinx.coroutines.flow.MutableStateFlow;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,8 +75,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import kotlinx.coroutines.flow.MutableStateFlow;
 
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper

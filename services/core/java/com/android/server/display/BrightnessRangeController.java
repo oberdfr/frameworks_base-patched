@@ -116,6 +116,7 @@ class BrightnessRangeController {
                 () -> mNormalBrightnessModeController.setAutoBrightnessState(state),
                 () ->  mHbmController.setAutoBrightnessEnabled(state)
         );
+        mHdrClamper.setAutoBrightnessState(state);
     }
 
     void onBrightnessChanged(float brightness, float unthrottledBrightness,

@@ -40,6 +40,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.android.internal.location.GpsNetInitiatedHandler;
+import com.android.server.FgThread;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -202,7 +203,12 @@ class GnssNetworkConnectivityHandler {
 
         SubscriptionManager subManager = mContext.getSystemService(SubscriptionManager.class);
         if (subManager != null) {
-            subManager.addOnSubscriptionsChangedListener(mOnSubscriptionsChangeListener);
+            if (Flags.subscriptionsChangedListenerThread()) {
+                subManager.addOnSubscriptionsChangedListener(FgThread.getExecutor(),
+                        mOnSubscriptionsChangeListener);
+            } else {
+                subManager.addOnSubscriptionsChangedListener(mOnSubscriptionsChangeListener);
+            }
         }
 
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -613,7 +619,18 @@ class GnssNetworkConnectivityHandler {
                 ServiceState state = telephonyManager.getServiceState();
                 if (state != null && state.isUsingNonTerrestrialNetwork()) {
                     networkRequestBuilder.removeCapability(NET_CAPABILITY_NOT_RESTRICTED);
-                    networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_SATELLITE);
+                    try {
+                        networkRequestBuilder.addTransportType(NetworkCapabilities
+                                .TRANSPORT_SATELLITE);
+                        networkRequestBuilder.removeCapability(NetworkCapabilities
+                                .NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED);
+                    } catch (IllegalArgumentException ignored) {
+                        // In case TRANSPORT_SATELLITE or NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
+                        // are not recognized, meaning an old connectivity module runs on new
+                        // android in which case no network with such capabilities will be brought
+                        // up, so it's safe to ignore the exception.
+                        // TODO: Can remove the try-catch in next quarter release.
+                    }
                 }
             }
         }

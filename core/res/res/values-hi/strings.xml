@@ -84,7 +84,7 @@
     <string name="NetworkPreferenceSwitchTitle" msgid="1008329951315753038">"मोबाइल नेटवर्क से कनेक्ट नहीं किया जा सका"</string>
     <string name="NetworkPreferenceSwitchSummary" msgid="2086506181486324860">"पसंदीदा नेटवर्क बदलकर देखें. बदलने के लिए टैप करें."</string>
     <string name="EmergencyCallWarningTitle" msgid="1615688002899152860">"आपातकालीन कॉल करने की सुविधा उपलब्ध नहीं है"</string>
-    <string name="EmergencyCallWarningSummary" msgid="1194185880092805497">"वाई-फ़ाई के ज़रिए आपातकालीन कॉल नहीं किया जा सकता"</string>
+    <string name="EmergencyCallWarningSummary" msgid="9102799172089265268">"आपातकालीन कॉल के लिए मोबाइल नेटवर्क ज़रूरी है"</string>
     <string name="notification_channel_network_alert" msgid="4788053066033851841">"सूचनाएं"</string>
     <string name="notification_channel_call_forward" msgid="8230490317314272406">"कॉल को दूसरे नंबर पर भेजना"</string>
     <string name="notification_channel_emergency_callback" msgid="54074839059123159">"आपातकालीन कॉलबैक मोड"</string>
@@ -153,16 +153,19 @@
     <string name="cfTemplateForwardedTime" msgid="735042369233323609">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g> <xliff:g id="TIME_DELAY">{2}</xliff:g> सेकंड के बाद"</string>
     <string name="cfTemplateRegistered" msgid="5619930473441550596">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: अग्रेषित नहीं किया गया"</string>
     <string name="cfTemplateRegisteredTime" msgid="5222794399642525045">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: अग्रेषित नहीं किया गया"</string>
-    <string name="scCellularNetworkSecurityTitle" msgid="90330018476923559">"मोबाइल नेटवर्क की सुरक्षा"</string>
-    <string name="scCellularNetworkSecuritySummary" msgid="8659128412709908263">"सेटिंग देखें"</string>
-    <string name="scIdentifierDisclosureIssueTitle" msgid="3737384845335568193">"डिवाइस आइडेंटिफ़ायर की जानकारी ऐक्सेस की गई"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="3870743771498510600">"<xliff:g id="DISCLOSURE_NETWORK">%4$s</xliff:g> कनेक्शन से जुड़े किसी नेटवर्क ने, <xliff:g id="DISCLOSURE_WINDOW_START_TIME">%2$tr</xliff:g> से <xliff:g id="DISCLOSURE_WINDOW_END_TIME">%3$tr</xliff:g> के बीच आपके डिवाइस के यूनीक आइडेंटिफ़ायर (IMSI) की जानकारी <xliff:g id="DISCLOSURE_COUNT">%1$d</xliff:g> बार रिकॉर्ड की."</string>
-    <string name="scNullCipherIssueEncryptedTitle" msgid="8426373579673205292">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> के साथ एन्क्रिप्ट यानी सुरक्षित किया गया कनेक्शन"</string>
-    <string name="scNullCipherIssueEncryptedSummary" msgid="6437468449554283998">"अब आपका डिवाइस ज़्यादा सुरक्षित मोबाइल नेटवर्क से कनेक्ट है."</string>
-    <string name="scNullCipherIssueNonEncryptedTitle" msgid="2069674849204163569">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> के साथ एन्क्रिप्ट नहीं किया गया कनेक्शन"</string>
-    <string name="scNullCipherIssueNonEncryptedSummary" msgid="3577092996366374833">"आपका डिवाइस ऐसे मोबाइल नेटवर्क से कनेक्ट है जिसे एन्क्रिप्ट नहीं किया गया है. आपके कॉल, मैसेज, और डेटा को ऐक्सेस किया जा सकता है."</string>
-    <string name="scNullCipherIssueActionSettings" msgid="8378372959891478470">"मोबाइल नेटवर्क की सुरक्षा सेटिंग"</string>
+    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"मोबाइल नेटवर्क की सुरक्षा"</string>
+    <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"एन्क्रिप्शन, असुरक्षित नेटवर्क के लिए सूचनाएं"</string>
+    <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"डिवाइस आईडी को ऐक्सेस किया गया"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"आपके <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> सिम के ज़रिए, आस-पास के नेटवर्क ने <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> पर आपके डिवाइस का यूनीक आईडी (IMSI या IMEI) रिकॉर्ड किया"</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"आपके <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> सिम के ज़रिए, आस-पास के नेटवर्क ने <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> पर आपके डिवाइस का यूनीक आईडी (IMSI या IMEI) रिकॉर्ड किया.\n\nइसका मतलब है कि आपकी जगह की जानकारी, गतिविधि या निजी जानकारी को लॉग किया गया है. यह आम बात है. हालांकि, यह उन लोगों के लिए समस्या की वजह हो सकता है जिन्हें अपनी निजी जानकारी को लेकर चिंता रहती है."</string>
+    <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"एन्क्रिप्ट यानी सुरक्षित नेटवर्क <xliff:g id="NETWORK_NAME">%1$s</xliff:g> से कनेक्ट किया गया"</string>
+    <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"अब <xliff:g id="NETWORK_NAME">%1$s</xliff:g> सिम का कनेक्शन ज़्यादा सुरक्षित हो गया है"</string>
+    <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ऐसे नेटवर्क से कनेक्ट किया गया जो सुरक्षित नहीं है"</string>
+    <string name="scNullCipherIssueNonEncryptedSummaryNotification" msgid="7386936934128110388">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> सिम का इस्तेमाल करने पर, कॉल, मैसेज, और डेटा ऐक्सेस किए जाने का खतरा हो सकता है"</string>
+    <string name="scNullCipherIssueNonEncryptedSummary" msgid="5093428974513703253">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> सिम का इस्तेमाल करने पर, कॉल, मैसेज, और डेटा ऐक्सेस किए जाने का खतरा हो सकता है.\n\nजब आपका कनेक्शन फिर से एन्क्रिप्ट यानी सुरक्षित हो जाएगा, तब आपको नई सूचना भेजी जाएगी."</string>
+    <string name="scNullCipherIssueActionSettings" msgid="5888857706424639946">"मोबाइल नेटवर्क की सुरक्षा से जुड़ी सेटिंग"</string>
     <string name="scNullCipherIssueActionLearnMore" msgid="7896642417214757769">"ज़्यादा जानें"</string>
+    <string name="scNullCipherIssueActionGotIt" msgid="8747796640866585787">"ठीक है"</string>
     <string name="fcComplete" msgid="1080909484660507044">"सुविधा कोड पूरा हुआ."</string>
     <string name="fcError" msgid="5325116502080221346">"कनेक्‍शन समस्‍या या अमान्‍य सुविधा कोड."</string>
     <string name="httpErrorOk" msgid="6206751415788256357">"ठीक है"</string>
@@ -198,6 +201,8 @@
     <string name="work_profile_deleted_description_dpm_wipe" msgid="2477244968924647232">"आपकी वर्क प्रोफ़ाइल अब इस डिवाइस पर उपलब्‍ध नहीं है"</string>
     <string name="work_profile_deleted_reason_maximum_password_failure" msgid="1080323158315663167">"कई बार गलत पासवर्ड डाला गया"</string>
     <string name="device_ownership_relinquished" msgid="4080886992183195724">"एडमिन ने निजी इस्तेमाल के लिए डिवाइस दे दिया है"</string>
+    <string name="private_space_deleted_by_admin" msgid="1484365588862066939">"प्राइवेट स्पेस हटाया गया"</string>
+    <string name="private_space_deleted_by_admin_details" msgid="7007781735201818689">"आपका संगठन मैनेज किए जा रहे इस डिवाइस पर प्राइवेट स्पेस रखने की अनुमति नहीं देता है."</string>
     <string name="network_logging_notification_title" msgid="554983187553845004">"डिवाइस प्रबंधित है"</string>
     <string name="network_logging_notification_text" msgid="1327373071132562512">"आपका संगठन इस डिवाइस का प्रबंधन करता है और वह नेटवर्क ट्रैफ़िक की निगरानी भी कर सकता है. विवरण के लिए टैप करें."</string>
     <string name="location_changed_notification_title" msgid="3620158742816699316">"ऐप्लिकेशन आपकी जगह की जानकारी ऐक्सेस कर सकते हैं"</string>
@@ -280,6 +285,7 @@
     <string name="global_action_voice_assist" msgid="6655788068555086695">"आवाज़ से डिवाइस का इस्तेमाल"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"लॉकडाउन"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
+    <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"जवाब दें"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"नई सूचना"</string>
     <string name="notification_channel_physical_keyboard" msgid="5417306456125988096">"सामान्य कीबोर्ड"</string>
     <string name="notification_channel_security" msgid="8516754650348238057">"सुरक्षा"</string>
@@ -356,6 +362,7 @@
     <string name="capability_title_canTakeScreenshot" msgid="3895812893130071930">"स्क्रीनशॉट लें"</string>
     <string name="capability_desc_canTakeScreenshot" msgid="7762297374317934052">"डिसप्ले का स्क्रीनशॉट लिया जा सकता है."</string>
     <string name="dream_preview_title" msgid="5570751491996100804">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> की झलक"</string>
+    <string name="dream_accessibility_action_click" msgid="7392398629967797805">"खारिज करें"</string>
     <string name="permlab_statusBar" msgid="8798267849526214017">"स्टेटस बार को अक्षम करें या बदलें"</string>
     <string name="permdesc_statusBar" msgid="5809162768651019642">"ऐप को, स्टेटस बार को बंद करने या सिस्‍टम आइकॉन को जोड़ने और निकालने की अनुमति देता है."</string>
     <string name="permlab_statusBarService" msgid="2523421018081437981">"स्टेटस बार को रहने दें"</string>
@@ -622,7 +629,7 @@
     <string name="permlab_useBiometric" msgid="6314741124749633786">"बायोमीट्रिक हार्डवेयर इस्तेमाल करने दें"</string>
     <string name="permdesc_useBiometric" msgid="7502858732677143410">"पुष्टि के लिए, ऐप्लिकेशन को बायोमीट्रिक हार्डवेयर इस्तेमाल करने की मंज़ूरी दें"</string>
     <string name="permlab_manageFingerprint" msgid="7432667156322821178">"फ़िंगरप्रिंट हार्डवेयर को प्रबंधित करें"</string>
-    <string name="permdesc_manageFingerprint" msgid="2025616816437339865">"फ़िंगरप्रिंट वाले टेम्पलेट का इस्तेमाल करने के लिए जोड़ने और हटाने के लिए ऐप को तरीके शुरू करने देती है."</string>
+    <string name="permdesc_manageFingerprint" msgid="2025616816437339865">"फ़िंगरप्रिंट वाले टेंप्लेट का इस्तेमाल करने के लिए जोड़ने और हटाने के लिए ऐप को तरीके शुरू करने देती है."</string>
     <string name="permlab_useFingerprint" msgid="1001421069766751922">"फ़िंगरप्रिंट हार्डवेयर का उपयोग करें"</string>
     <string name="permdesc_useFingerprint" msgid="412463055059323742">"ऐप के प्रमाणीकरण के लिए फ़िंगरप्रिंट हार्डवेयर का उपयोग करने देती है"</string>
     <string name="permlab_audioWrite" msgid="8501705294265669405">"अपने संगीत संग्रह में बदलाव करने की अनुमति दें"</string>
@@ -1183,6 +1190,8 @@
     <string name="deleteText" msgid="4200807474529938112">"मिटाएं"</string>
     <string name="inputMethod" msgid="1784759500516314751">"इनपुट विधि"</string>
     <string name="editTextMenuTitle" msgid="857666911134482176">"लेख क्रियाएं"</string>
+    <string name="error_handwriting_unsupported" msgid="7809438534946014050">"हैंडराइटिंग की सुविधा, इस फ़ील्ड में काम नहीं करती है"</string>
+    <string name="error_handwriting_unsupported_password" msgid="5095401146106891087">"हैंडराइटिंग की सुविधा, पासवर्ड वाले फ़ील्ड में काम नहीं करती है"</string>
     <string name="input_method_nav_back_button_desc" msgid="3655838793765691787">"वापस जाएं"</string>
     <string name="input_method_ime_switch_button_desc" msgid="2736542240252198501">"इनपुट का तरीका बदलें"</string>
     <string name="low_internal_storage_view_title" msgid="9024241779284783414">"मेमोरी में जगह नहीं बची है"</string>
@@ -1874,7 +1883,7 @@
     <string name="restr_pin_error_too_short" msgid="1547007808237941065">"PIN बहुत छोटा है. कम से कम 4 अंकों का होना चाहिए."</string>
     <string name="restr_pin_try_later" msgid="5897719962541636727">"बाद में फिर से प्रयास करें"</string>
     <string name="immersive_cling_title" msgid="2307034298721541791">"आप पूरे स्क्रीन पर देख रहे हैं"</string>
-    <string name="immersive_cling_description" msgid="7092737175345204832">"बाहर निकलने के लिए, ऊपर से नीचे स्वा‍इप करें."</string>
+    <string name="immersive_cling_description" msgid="2896205051090870978">"बंद करने के लिए, स्क्रीन के सबसे ऊपरी हिस्से से नीचे की ओर स्वाइप करें"</string>
     <string name="immersive_cling_positive" msgid="7047498036346489883">"ठीक है"</string>
     <string name="display_rotation_camera_compat_toast_after_rotation" msgid="7600891546249829854">"बेहतर व्यू पाने के लिए, डिवाइस की स्क्रीन को घुमाएं"</string>
     <string name="display_rotation_camera_compat_toast_in_multi_window" msgid="2473122980393502775">"बेहतर व्यू पाने के लिए <xliff:g id="NAME">%s</xliff:g> को फ़ुल स्क्रीन में खोलें"</string>
@@ -1894,7 +1903,7 @@
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"अनपिन करने से पहले पिन के लिए पूछें"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"अनपिन करने से पहले लॉक खोलने के पैटर्न के लिए पूछें"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"अनपिन करने से पहले पासवर्ड के लिए पूछें"</string>
-    <string name="package_installed_device_owner" msgid="7035926868974878525">"आपके व्यवस्थापक ने इंस्टॉल किया है"</string>
+    <string name="package_installed_device_owner" msgid="8684974629306529138">"इसे आपके एडमिन ने इंस्टॉल किया है.\nजिन अनुमतियों को मंज़ूरी मिली है उन्हें देखने के लिए, सेटिंग में जाएं"</string>
     <string name="package_updated_device_owner" msgid="7560272363805506941">"आपके व्यवस्थापक ने अपडेट किया है"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपके व्यवस्थापक ने हटा दिया है"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठीक है"</string>
@@ -1927,6 +1936,9 @@
     <string name="zen_mode_implicit_trigger_description" msgid="5714956693073007111">"मैनेज करने वाला ऐप्लिकेशन: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="zen_mode_implicit_activated" msgid="2634285680776672994">"चालू है"</string>
     <string name="zen_mode_implicit_deactivated" msgid="8688441768371501750">"बंद है"</string>
+    <string name="zen_mode_trigger_summary_divider_text" msgid="7461583466043698862">", "</string>
+    <string name="zen_mode_trigger_summary_range_symbol_combination" msgid="1804900738798069619">"<xliff:g id="START">%1$s</xliff:g> - <xliff:g id="END">%2$s</xliff:g>"</string>
+    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"कोई भी कैलेंडर"</string>
     <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> कुछ आवाज़ें म्‍यूट कर रहा है"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"आपके डिवाइस में कोई अंदरूनी समस्या है और यह तब तक ठीक नहीं होगी जब तक आप फ़ैक्‍टरी डेटा रीसेट नहीं करते."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"आपके डिवाइस के साथ कोई आंतरिक गड़बड़ी हुई. विवरणों के लिए अपने निर्माता से संपर्क करें."</string>
@@ -2184,7 +2196,6 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"डी-पैड का बाईं ओर वाला बटन"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"डी-पैड का दाईं ओर वाला बटन"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"डी-पैड का बीच वाला बटन"</string>
-    <string name="accessibility_freeform_caption" msgid="8377519323496290122">"<xliff:g id="APP_NAME">%1$s</xliff:g> का कैप्शन बार."</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> को प्रतिबंधित बकेट में रखा गया है"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"एक इमेज भेजी गई"</string>
@@ -2211,6 +2222,8 @@
     <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"क्या आपको वर्क ऐप्लिकेशन पर स्विच करना है?"</string>
     <string name="miniresolver_call_information" msgid="6739417525304184083">"आपके संगठन ने, सिर्फ़ वर्क ऐप्लिकेशन से कॉल करने की अनुमति दी है"</string>
     <string name="miniresolver_sms_information" msgid="4311292661329483088">"आपके संगठन ने, सिर्फ़ वर्क ऐप्लिकेशन से मैसेज भेजने की अनुमति दी है"</string>
+    <string name="miniresolver_private_space_phone_information" msgid="4469511223312488570">"सिर्फ़ अपने व्यक्तिगत Phone ऐप्लिकेशन से कॉल किए जा सकते हैं. व्यक्तिगत Phone से किए गए कॉल, व्यक्तिगत कॉल इतिहास में सेव होते हैं."</string>
+    <string name="miniresolver_private_space_messages_information" msgid="111285656327622118">"सिर्फ़ व्यक्तिगत Messages ऐप्लिकेशन से एसएमएस मैसेज भेजे जा सकते हैं."</string>
     <string name="miniresolver_use_personal_browser" msgid="776072682871133308">"निजी ब्राउज़र का इस्तेमाल करें"</string>
     <string name="miniresolver_use_work_browser" msgid="543575306251952994">"ऑफ़िस के काम से जुड़े ब्राउज़र का इस्तेमाल करें"</string>
     <string name="miniresolver_call" msgid="6386870060423480765">"कॉल करें"</string>
@@ -2390,11 +2403,19 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"ऑफ़िस 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"टेस्ट"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"कम्यूनिटी"</string>
+    <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"वर्क प्रोफ़ाइल"</string>
+    <string name="accessibility_label_private_profile" msgid="1436459319135548969">"प्राइवेट स्पेस"</string>
+    <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"क्लोन"</string>
+    <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"कम्यूनिटी"</string>
+    <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"प्राइवेट स्पेस"</string>
+    <string name="redacted_notification_message" msgid="1520587845842228816">"संवेदनशील जानकारी वाली सूचना का कॉन्टेंट छिपा है"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
+    <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"स्क्रीन शेयर करने के दौरान सुरक्षा के लिए, ऐप्लिकेशन का कॉन्टेंट छिपाया गया"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"सैटलाइट से अपने-आप कनेक्ट हो गया"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"मोबाइल या वाई-फ़ाई नेटवर्क के बिना भी मैसेज भेजे और पाए जा सकते हैं"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages ऐप्लिकेशन खोलें"</string>
     <string name="satellite_notification_how_it_works" msgid="3132069321977520519">"यह सेटिंग कैसे काम करती है"</string>
+    <string name="unarchival_session_app_label" msgid="6811856981546348205">"प्रोसेस जारी है..."</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"फ़िंगरप्रिंट अनलॉक की सुविधा दोबारा सेट अप करें"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"अब <xliff:g id="FINGERPRINT">%s</xliff:g> की पहचान नहीं की जा सकती."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"अब <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> और <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> की पहचान नहीं की जा सकती."</string>

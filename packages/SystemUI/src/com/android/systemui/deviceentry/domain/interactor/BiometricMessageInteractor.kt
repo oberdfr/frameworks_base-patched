@@ -156,12 +156,12 @@ constructor(
     private val filterConditionForFaceHelpMessages:
         Flow<(HelpFaceAuthenticationStatus) -> Boolean> =
         combine(
-                biometricSettingsInteractor.fingerprintAndFaceEnrolledAndEnabled,
+                biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled,
                 biometricSettingsInteractor.faceAuthCurrentlyAllowed,
                 ::Pair
             )
-            .flatMapLatest { (faceAndFingerprintEnrolled, faceAuthCurrentlyAllowed) ->
-                if (faceAndFingerprintEnrolled && faceAuthCurrentlyAllowed) {
+            .flatMapLatest { (fingerprintEnrolled, faceAuthCurrentlyAllowed) ->
+                if (fingerprintEnrolled && faceAuthCurrentlyAllowed) {
                     // Show only some face help messages if fingerprint is also enrolled
                     coExFaceAcquisitionMsgIdsToShow.map { msgIdsToShow ->
                         { helpStatus: HelpFaceAuthenticationStatus ->
