@@ -38,12 +38,17 @@ public final class hentaiSpoofer {
     private static final String PACKAGE_FINSKY = "com.android.vending";
     private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
 
+    private static volatile String[] sSpoofProps = null;
+    private static volatile String[] sCertifiedProps = null;
+    private static volatile String[] sProductSpoofProps = null;
+
     private static volatile boolean sIsSvt = false;
     private static volatile boolean sIsGms = false;
     private static volatile boolean sIsFinsky = false;
+    private static volatile boolean sDevicePackageSpoof = false;
 
     // Product Spoofing
-    private static final String[] PROCESSES_SPT = {
+    private static final String[] PACKAGES_SPT = {
         // Google
         "com.google.android.googlequicksearchbox",
         // Photos
@@ -54,6 +59,18 @@ public final class hentaiSpoofer {
         "com.google.android.apps.wallpaper",
         // Pixel Live Wallpaper
         "com.google.pixel.livewallpaper",
+    };
+
+    private static final String[] PACKAGES_SPOOF = {
+        "com.google.",
+        PACKAGE_FINSKY,
+    };
+
+    private static final String[] PROCESSES_BLACKLISTED = {"com.google.android.apps.pixel.health",
+        PROCESS_UNSTABLE,
+        "com.google.android.GoogleCamera",
+        "com.google.android.GoogleCameraEng",
+        "com.google.android.apps.googlecamera.fishfood"
     };
 
     // Generic Build Proprieties list
@@ -86,22 +103,48 @@ public final class hentaiSpoofer {
         }
     }
 
-    private static boolean spoofProcesses(String processName, String[] spoofProcesses) {
-        for (String spoofProcess : spoofProcesses) {
-            if (processName.startsWith(spoofProcess)) {
+    private static boolean isBlacklisted(String processName) {
+        for (String blacklisted : PROCESSES_BLACKLISTED) {
+            if (processName.startsWith(blacklisted)) {
                 return true;
             }
         }
         return false;
     }
 
+    private static boolean spoofPackage(String packageName, String processName, String[] spoofProcesses) {
+        if (isBlacklisted(processName)) {
+            return false;
+        }
+        for (String spoofProcess : spoofProcesses) {
+            if (packageName.startsWith(spoofProcess)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void spoofProductPackages(Context context) {
+        if (sProductSpoofProps == null) {
+            sProductSpoofProps = hentaiResourceUtils.loadArrayFromResources(context, hentaiResourceUtils.PACKAGE_DEVICE, "buildProperties");
+        }
+        if (sProductSpoofProps.length > 0) {
+            sDevicePackageSpoof = true;
+            for (int i = 0; i < buildProperties.length && i < sProductSpoofProps.length; i++) {
+                if (sProductSpoofProps[i] != null && !sProductSpoofProps[i].isEmpty()) {
+                    setBuildField(buildProperties[i], sProductSpoofProps[i]);
+                }
+            }
+        }
+    }
+
     // Play Integrity
     private static void spoofGmsAttest(Context context) {
-        String[] sCertifiedProps = hentaiResourceUtils.loadArrayFromResources(context, hentaiResourceUtils.PACKAGE_DEVICE, "certifiedBuildProperties");
-
+        if (sCertifiedProps == null) {
+            sCertifiedProps = hentaiResourceUtils.loadArrayFromResources(context, hentaiResourceUtils.PACKAGE_DEVICE, "certifiedBuildProperties");
+        }
         if (sCertifiedProps.length > 0) {
             sIsSvt = true;
-
             for (int i = 0; i < buildProperties.length && i < sCertifiedProps.length; i++) {
                 if (sCertifiedProps[i] != null && !sCertifiedProps[i].isEmpty()) {
                     setBuildField(buildProperties[i], sCertifiedProps[i]);
@@ -112,8 +155,9 @@ public final class hentaiSpoofer {
 
     // Product Spoofing
     private static void spoofGms(Context context) {
-        String[] sSpoofProps = hentaiResourceUtils.loadArrayFromResources(context, hentaiResourceUtils.PACKAGE_SPT, "buildProperties");
-
+        if (sSpoofProps == null) {
+            sSpoofProps = hentaiResourceUtils.loadArrayFromResources(context, hentaiResourceUtils.PACKAGE_SPT, "buildProperties");
+        }
         if (sSpoofProps.length > 0) {
             for (int i = 0; i < buildProperties.length && i < sSpoofProps.length; i++) {
                 if (sSpoofProps[i] != null && !sSpoofProps[i].isEmpty()) {
@@ -142,8 +186,12 @@ public final class hentaiSpoofer {
             sIsFinsky = true;
         }
 
+        if (spoofPackage(packageName, processName, PACKAGES_SPOOF)) {
+            spoofProductPackages(context);
+        }
+
         // Product Spoofing
-        if (spoofProcesses(processName, PROCESSES_SPT)) {
+        if (!sDevicePackageSpoof && spoofPackage(packageName, processName, PACKAGES_SPT)) {
             spoofGms(context);
         }
     }
