@@ -33,6 +33,7 @@ import android.system.keystore2.ResponseCode;
 import android.util.Log;
 
 import com.android.internal.hentaiutils.hentaiKeyboxImitation;
+import com.android.internal.hentaiutils.KeyProviderManager;
 
 import java.util.Calendar;
 
@@ -284,9 +285,14 @@ public class KeyStore2 {
     public KeyEntryResponse getKeyEntry(@NonNull KeyDescriptor descriptor)
             throws KeyStoreException {
         StrictMode.noteDiskRead();
-
-        return hentaiKeyboxImitation.onGetKeyEntry(
+        
+        if (KeyProviderManager.isKeyboxAvailable()) {
+            return hentaiKeyboxImitation.onGetKeyEntry(
                 handleRemoteExceptionWithRetry((service) -> service.getKeyEntry(descriptor)));
+        } else {
+            return handleRemoteExceptionWithRetry((service) -> service.getKeyEntry(descriptor));
+        }
+        
     }
 
     /**

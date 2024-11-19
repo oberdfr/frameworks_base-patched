@@ -27,6 +27,9 @@ import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** @hide */
 public final class hentaiSpoofer {
@@ -46,8 +49,12 @@ public final class hentaiSpoofer {
     private static volatile boolean sIsGms = false;
     private static volatile boolean sIsFinsky = false;
     private static volatile boolean sDevicePackageSpoof = false;
+    private static volatile boolean sDevicePackageStockFields = false;
 
-    // Spoofing blacklist
+    // Backup of stock Build properties
+    private static Map<String, String> stockBuildFields = new ConcurrentHashMap<>();
+
+    // Spoofing processes blacklist
     private static final String[] PROCESSES_BLACKLISTED = {
         // Thermometer for guides
         "com.google.android.apps.pixel.health",
@@ -57,6 +64,17 @@ public final class hentaiSpoofer {
         "com.google.android.GoogleCamera",
         "com.google.android.GoogleCameraEng",
         "com.google.android.apps.googlecamera.fishfood",
+        // Call of Duty Warzone
+        "com.activision.",
+    };
+
+    // Spoofing packages blacklist
+    private static final String[] PACKAGES_BLACKLISTED = {};
+
+    // Spoofing packages with default properties
+    private static final String[] PACKAGES_DEFAULTPROP = {
+        // Call of Duty Warzone
+        "com.activision.callofduty.warzone",
     };
 
     // Spoof every google app
@@ -95,6 +113,20 @@ public final class hentaiSpoofer {
 
     private hentaiSpoofer() { }
 
+    private static void backupBuildFields() {
+        try {
+            for (String key : buildProperties) {
+                Field field = Build.class.getDeclaredField(key);
+                field.setAccessible(true);
+                stockBuildFields.put(key, (String) field.get(null));
+                field.setAccessible(false);
+            }
+            Log.i(TAG, "Stock Build fields backed up successfully.");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Log.e(TAG, "Failed to back up stock Build fields.", e);
+        }
+    }
+
     private static void setBuildField(String key, String value) {
         try {
             // Unlock
@@ -111,9 +143,35 @@ public final class hentaiSpoofer {
         }
     }
 
-    private static boolean isBlacklisted(String processName) {
-        for (String blacklisted : PROCESSES_BLACKLISTED) {
-            if (processName.startsWith(blacklisted)) {
+    private static void restoreStockBuildFields() {
+        for (Map.Entry<String, String> entry : stockBuildFields.entrySet()) {
+            setBuildField(entry.getKey(), entry.getValue());
+        }
+        sDevicePackageStockFields = true;
+        Log.i(TAG, "Stock Build fields restored successfully.");
+    }
+
+    private static boolean isProcessBlacklisted(String processName) {
+        for (String process_blacklisted : PROCESSES_BLACKLISTED) {
+            if (processName.startsWith(process_blacklisted)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isPackageBlacklisted(String packageName) {
+        for (String package_blacklisted : PACKAGES_BLACKLISTED) {
+            if (packageName.startsWith(package_blacklisted)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isPackageInList(String packageName, String[] packageList) {
+        for (String pkg : packageList) {
+            if (packageName.startsWith(pkg)) {
                 return true;
             }
         }
@@ -121,7 +179,7 @@ public final class hentaiSpoofer {
     }
 
     private static boolean spoofPackage(String packageName, String processName, String[] spoofProcesses) {
-        if (isBlacklisted(processName)) {
+        if (isProcessBlacklisted(processName) || isPackageBlacklisted(packageName) || isPackageInList(packageName, PACKAGES_DEFAULTPROP)) {
             return false;
         }
 
@@ -182,11 +240,22 @@ public final class hentaiSpoofer {
     }
 
     public static void initApplicationBeforeOnCreate(Context context) {
+        if (stockBuildFields.isEmpty()) {
+            backupBuildFields();
+        }
+
         final String packageName = context.getPackageName();
         final String processName = Application.getProcessName();
-
+        Log.i(TAG, "InitApplicationBeforeOnCreate PackageName=" + packageName + " ProcessName=" + processName);
+        
         if (TextUtils.isEmpty(packageName) || processName == null) {
             return;
+        }
+
+        // Apply stock Build fields for specific packages
+        if (isPackageInList(packageName, PACKAGES_DEFAULTPROP)) {
+            Log.i(TAG, "Restoring stock Build fields for package: " + packageName);
+            restoreStockBuildFields();
         }
 
         // Play Integrity
@@ -206,7 +275,7 @@ public final class hentaiSpoofer {
         }
 
         // Product Spoofing
-        if (!sDevicePackageSpoof) {
+        if (!sDevicePackageSpoof && !sDevicePackageStockFields) {
             if (spoofPackage(packageName, processName, PACKAGES_SPT)) {
                 spoofGms(context);
             }
